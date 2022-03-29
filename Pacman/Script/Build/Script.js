@@ -46,6 +46,9 @@ var Script;
     document.addEventListener("interactiveViewportStarted", start);
     function start(_event) {
         viewport = _event.detail;
+        console.log(viewport.camera);
+        viewport.camera.mtxPivot.translate(new ƒ.Vector3(2, 2, 15));
+        viewport.camera.mtxPivot.rotateY(180, false);
         let graph = viewport.getBranch();
         pacman = graph.getChildrenByName("Pacman")[0];
         console.log(graph);
@@ -86,7 +89,7 @@ var Script;
         }
         pacman.mtxLocal.translate(speed);
         viewport.draw();
-        ƒ.AudioManager.default.update();
+        // ƒ.AudioManager.default.update();
     }
     function isTile(_x, _y) {
         let graph = viewport.getBranch();
