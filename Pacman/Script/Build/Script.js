@@ -40,24 +40,64 @@ var Script;
 (function (Script) {
     var ƒ = FudgeCore;
     ƒ.Debug.info("Main Program Template running!");
+    let dialog;
+    window.addEventListener("load", init);
+    document.addEventListener("interactiveViewportStarted", start);
     let viewport;
     let pacman;
     let speed = new ƒ.Vector3(0, 0, 0);
-    document.addEventListener("interactiveViewportStarted", start);
+    let graph = viewport.getBranch();
+    let wakaSound = graph.getChildrenByName("Sounds")[0].getComponents(ƒ.ComponentAudio)[1];
+    function init(_event) {
+        dialog = document.querySelector("dialog");
+        dialog.querySelector("h1").textContent = document.title;
+        // tslint:disable-next-line: typedef
+        dialog.addEventListener("click", function (_event) {
+            // @ts-ignore until HTMLDialog is implemented by all browsers and available in dom.d.ts
+            dialog.close();
+            startInteractiveViewport();
+        });
+        // @ts-ignore
+        dialog.showModal();
+    }
+    async function startInteractiveViewport() {
+        // load resources referenced in the link-tag
+        await ƒ.Project.loadResourcesFromHTML();
+        ƒ.Debug.log("Project:", ƒ.Project.resources);
+        // pick the graph to show
+        let graph = ƒ.Project.resources["Graph|2022-03-17T14:07:41.339Z|38276"];
+        ƒ.Debug.log("Graph:", graph);
+        if (!graph) {
+            alert("Nothing to render. Create a graph with at least a mesh, material and probably some light");
+            return;
+        }
+        // setup the viewport
+        let cmpCamera = new ƒ.ComponentCamera();
+        let canvas = document.querySelector("canvas");
+        let viewport = new ƒ.Viewport();
+        viewport.initialize("InteractiveViewport", graph, cmpCamera, canvas);
+        ƒ.Debug.log("Viewport:", viewport);
+        viewport.draw();
+        canvas.dispatchEvent(new CustomEvent("interactiveViewportStarted", {
+            bubbles: true,
+            detail: viewport,
+        }));
+    }
     function start(_event) {
         viewport = _event.detail;
-        console.log(viewport.camera);
         viewport.camera.mtxPivot.translate(new ƒ.Vector3(2, 2, 15));
         viewport.camera.mtxPivot.rotateY(180, false);
         let graph = viewport.getBranch();
         pacman = graph.getChildrenByName("Pacman")[0];
         console.log(graph);
         // pacman.mtxLocal.translate(new ƒ.Vector3(1, 1, 0));
+        ƒ.AudioManager.default.listenTo(graph);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         // tslint:disable-next-line: max-line-length
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     }
     function update(_event) {
+        wakaSound.play(false);
         // ƒ.Physics.simulate();  // if physics is included and used
         // tslint:disable-next-line: max-line-length
         if (!isWall(Math.round(pacman.mtxLocal.translation.x + 0.51), Math.round(pacman.mtxLocal.translation.y)) && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D]) && (pacman.mtxLocal.translation.y + 0.025) % 1 < 0.05) {
@@ -89,6 +129,14 @@ var Script;
         }
         pacman.mtxLocal.translate(speed);
         viewport.draw();
+        /*
+            if (!isWall) {
+              wakaSound.play(true);
+            }
+            if (isWall) {
+              wakaSound.play(false);
+            }
+            */
         // ƒ.AudioManager.default.update();
     }
     function isTile(_x, _y) {
