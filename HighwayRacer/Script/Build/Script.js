@@ -60,16 +60,19 @@ var Script;
     let viewport;
     let car;
     let obstacles;
-    let speed = new ƒ.Vector3(0, -0.01, 0);
+    let speed = new ƒ.Vector3(0, -0.001, 0);
     let carControl = new ƒ.Vector3(0, 0, 0);
     let road;
     let roadsprite;
     let carsprite;
     let gameState;
+    let gameSpeed = 0.1;
+    let roadAnimationFramerate = 4;
     const collisionThreshold = 0.5; // Adjust this value to set the collision threshold
     // Define custom event names
     const EVENT_GAME_OVER = "gameOver";
     class Obstacle extends ƒ.Node {
+        passed = false; // Add a passed property to track if the obstacle has been passed
         constructor(texture, spinning) {
             super("Obstacle");
             this.addComponent(new ƒ.ComponentTransform());
@@ -123,8 +126,6 @@ var Script;
         else {
             carControl.set(0, 0, 0);
         }
-        // Update the speed of the signs
-        speed.y -= 0.001 * ƒ.Loop.timeFrameReal / 1000;
         // Move the signs and check for collisions
         for (const obstacle of obstacles.getChildren()) {
             obstacle.mtxLocal.translate(speed);
@@ -135,11 +136,14 @@ var Script;
         }
         // Move the signs and check for collisions
         for (const obstacle of obstacles.getChildren()) {
-            // ...
             // Check for collision with the car
             checkCollision(car, obstacle);
-            gameState.score = +1;
         }
+        gameSpeed = +0.001 * ƒ.Loop.timeFrameReal / 1000;
+        // Update the speed of the signs
+        speed.y -= gameSpeed;
+        roadAnimationFramerate += gameSpeed;
+        roadsprite.framerate = roadAnimationFramerate;
         car.mtxLocal.translate(carControl);
         viewport.draw();
         ƒ.AudioManager.default.update();
@@ -153,9 +157,17 @@ var Script;
             const event = new CustomEvent(EVENT_GAME_OVER);
             document.dispatchEvent(event);
         }
+        else if (carPosition.y > obstaclePosition.y && !obstacle.passed) {
+            obstacle.passed = true; // Mark the obstacle as passed
+            gameState.score++;
+            console.log("Score:", gameState.score);
+            // Play sound effect or perform other actions
+        }
     }
     function handleGameOver() {
         // Stop the game loop
+        let gameOverScreen = document.querySelector("#gameOverScreen");
+        gameOverScreen.style.display = "block";
         ƒ.Loop.stop();
         console.log("Game Over");
     }
@@ -192,7 +204,7 @@ var Script;
         let sprite = new ƒAid.NodeSprite("Sprite");
         sprite.setAnimation(animation);
         sprite.setFrameDirection(-1);
-        sprite.framerate = 8;
+        sprite.framerate = roadAnimationFramerate;
         let cmpTransfrom = new ƒ.ComponentTransform();
         sprite.addComponent(cmpTransfrom);
         return sprite;

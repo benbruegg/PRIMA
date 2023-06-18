@@ -25,3 +25,11 @@ canvas.fullscreen {
   border-color: black;
   color: black;
 }
+#gameOverScreen {
+  display: none;
+}
+
+:disabled {
+  background: white;
+  color: black;
+}

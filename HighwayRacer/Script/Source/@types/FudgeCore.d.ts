@@ -415,6 +415,7 @@ declare namespace FudgeCore {
         private listeners;
         private captures;
         private active;
+      passed: any;
         /**
          * Creates a new node with a name and initializes all attributes
          */
