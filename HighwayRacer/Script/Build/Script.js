@@ -39,49 +39,62 @@ var Script;
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
+    var ƒui = FudgeUserInterface;
+    class GameState extends ƒ.Mutable {
+        score = 0;
+        constructor() {
+            super();
+            let domHud = document.querySelector("div#vui");
+            console.log(new ƒui.Controller(this, domHud));
+        }
+        reduceMutator(_mutator) { }
+    }
+    Script.GameState = GameState;
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
     var ƒAid = FudgeAid;
+    document.addEventListener("interactiveViewportStarted", start);
     ƒ.Debug.info("Main Program Template running!");
     let viewport;
-    document.addEventListener("interactiveViewportStarted", start);
     let car;
     let obstacles;
-    let carObstacle;
     let speed = new ƒ.Vector3(0, -0.01, 0);
     let carControl = new ƒ.Vector3(0, 0, 0);
     let road;
     let roadsprite;
     let carsprite;
-    /*
-      class Obstacle extends ƒ.Node {
-        private additionalProperty: string;
-    
-        constructor(data: T, additionalProperty: string) {
-          super(data); // Call the parent class constructor
-          
-          this.additionalProperty = additionalProperty;
+    let gameState;
+    const collisionThreshold = 0.5; // Adjust this value to set the collision threshold
+    // Define custom event names
+    const EVENT_GAME_OVER = "gameOver";
+    class Obstacle extends ƒ.Node {
+        constructor(texture, spinning) {
+            super("Obstacle");
+            this.addComponent(new ƒ.ComponentTransform());
+            let mesh = new ƒ.MeshSprite();
+            this.addComponent(new ƒ.ComponentMesh(mesh));
+            let textureImage = new ƒ.TextureImage();
+            textureImage.image = texture.image;
+            let material = new ƒ.Material("ObstacleMaterial", ƒ.ShaderLitTextured, new ƒ.CoatTextured(new ƒ.Color(1, 1, 1, 1), textureImage));
+            let cmpMaterial = new ƒ.ComponentMaterial(material);
+            this.addComponent(cmpMaterial);
+            // Add the obstacle to the obstacles node
+            obstacles.appendChild(this);
         }
-      
-        getAdditionalProperty(): string {
-          return this.additionalProperty;
-        }
-        
-      }
-    
-      function createObstacle(): Obstacle {
-    
-        return any;
-      }
-    
-      */
+    }
     async function start(_event) {
         viewport = _event.detail;
         viewport.camera.attachToNode(road);
         viewport.camera.mtxPivot.translate(new ƒ.Vector3(0, 3.185, -10.9));
         viewport.camera.mtxPivot.rotateY(180, true);
+        gameState = new Script.GameState();
+        // Listen for the game over event
+        document.addEventListener(EVENT_GAME_OVER, handleGameOver);
         let graph = viewport.getBranch();
         car = graph.getChildrenByName("Car")[0];
         obstacles = graph.getChildrenByName("Obstacles")[0];
-        carObstacle = obstacles.getChildrenByName("CarObstacle")[0];
         road = graph.getChildrenByName("Background")[0];
         roadsprite = await createRoadSprite();
         road.addChild(roadsprite);
@@ -90,11 +103,11 @@ var Script;
         road.getComponent(ƒ.ComponentMaterial).activate(false);
         car.getComponent(ƒ.ComponentMaterial).activate(false);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
-        ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+        ƒ.Loop.start(); // start the game loop to continuously draw the viewport, update the audiosystem and drive the physics i/a
+        // Create instances of obstacles
+        createSignObstacle();
     }
     function update(_event) {
-        // ƒ.Physics.simulate();  // if physics is included and used
-        carObstacle.mtxLocal.translate(speed);
         if (car.mtxLocal.translation.x < 1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D])) {
             carControl.set(0.07, 0, 0);
         }
@@ -110,37 +123,66 @@ var Script;
         else {
             carControl.set(0, 0, 0);
         }
-        console.log("Z-Achse = " + car.mtxLocal.translation.y);
+        // Update the speed of the signs
+        speed.y -= 0.001 * ƒ.Loop.timeFrameReal / 1000;
+        // Move the signs and check for collisions
+        for (const obstacle of obstacles.getChildren()) {
+            obstacle.mtxLocal.translate(speed);
+            // Check if the sign has moved below a certain y-coordinate
+            if (obstacle.mtxLocal.translation.y < -2) {
+                obstacles.removeChild(obstacle); // Remove the sign from the obstacles node
+            }
+        }
+        // Move the signs and check for collisions
+        for (const obstacle of obstacles.getChildren()) {
+            // ...
+            // Check for collision with the car
+            checkCollision(car, obstacle);
+            gameState.score = +1;
+        }
         car.mtxLocal.translate(carControl);
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
-    function onLane(_x) {
-        let graph = viewport.getBranch();
-        let car = graph.getChildrenByName("Car")[0];
-        let lane = Math.round(car.mtxLocal.translation.x);
-        if (lane === -2 || lane === -1 || lane === 1 || lane === 2) {
-            console.log("Ist auf einer Spur");
-            console.log(lane);
-            return true;
-        }
-        else {
-            console.log("Ist auf keiner Spur");
-            console.log(lane);
-            return false;
+    function checkCollision(car, obstacle) {
+        const carPosition = car.mtxLocal.translation;
+        const obstaclePosition = obstacle.mtxLocal.translation;
+        if (Math.abs(carPosition.x - obstaclePosition.x) < collisionThreshold &&
+            Math.abs(carPosition.y - obstaclePosition.y) < collisionThreshold &&
+            Math.abs(carPosition.z - obstaclePosition.z) < collisionThreshold) {
+            const event = new CustomEvent(EVENT_GAME_OVER);
+            document.dispatchEvent(event);
         }
     }
-    /*
-     function createObstacle(): ƒ.Node {
-   
-       class Obstacle extends new ƒ.Node();
-       
-       let node: ƒ.Node
-     
-   
-       return node;
-     }
-     */
+    function handleGameOver() {
+        // Stop the game loop
+        ƒ.Loop.stop();
+        console.log("Game Over");
+    }
+    function getRandomXValue() {
+        const xValues = [1.5, 0.5, -0.5, -1.5];
+        const randomIndex = Math.floor(Math.random() * xValues.length);
+        return xValues[randomIndex];
+    }
+    function getRandomNumber(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+    function createSignObstacle() {
+        const signTexture = new ƒ.TextureImage("Textures/Sign.png");
+        const obstacle = new Obstacle(signTexture, false); // Set spinning to false for signs
+        // Set the position, rotation, or any other properties specific to each obstacle instance
+        // Randomly set the x and y coordinates within a specific range
+        obstacle.mtxLocal.translation = new ƒ.Vector3(getRandomXValue(), getRandomNumber(7, 7), 0);
+        obstacles.appendChild(obstacle);
+        scheduleNextSignCreation();
+    }
+    function scheduleNextSignCreation() {
+        const minInterval = 5; // Minimum interval in seconds
+        const maxInterval = 10; // Maximum interval in seconds
+        const interval = getRandomNumber(minInterval, maxInterval); // Random interval in seconds
+        // Wait for the interval and then create a sign obstacle
+        setTimeout(createSignObstacle, interval * 1000);
+    }
     async function createRoadSprite() {
         let imgSpriteSheet = new ƒ.TextureImage();
         await imgSpriteSheet.load("Textures/Road_bearbeitet.png");

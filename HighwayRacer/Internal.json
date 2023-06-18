@@ -18,6 +18,30 @@
       }
     }
   },
+  "Material|2023-06-18T17:30:27.617Z|81762": {
+    "ƒ.Material": {
+      "name": "ShaderLitTextured",
+      "idResource": "Material|2023-06-18T17:30:27.617Z|81762",
+      "shader": "ShaderLitTextured",
+      "coat": {
+        "ƒ.CoatTextured": {
+          "color": "[1, 1, 1, 1]",
+          "idTexture": "TextureImage|2023-06-18T17:29:55.436Z|59585"
+        }
+      }
+    }
+  },
+  "TextureImage|2023-06-18T17:29:55.436Z|59585": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\landscape_background.jpg",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-18T17:29:55.436Z|59585",
+        "name": "Landscape",
+        "mipmap": "CRISP"
+      }
+    }
+  },
   "Graph|2022-07-12T09:10:18.836Z|32621": {
     "ƒ.Graph": {
       "name": "Game",
@@ -28,199 +52,23 @@
           "ƒ.Node": {
             "name": "Obstacles",
             "active": true,
-            "components": {},
-            "children": [
-              {
-                "ƒ.Node": {
-                  "name": "pothole",
-                  "active": true,
-                  "components": {
-                    "ComponentMesh": [
-                      {
-                        "ƒ.ComponentMesh": {
-                          "idMesh": "MeshCube|2022-07-12T14:18:18.949Z|08921",
-                          "pivot": {
-                            "translation": "[1, -1, 0]",
-                            "rotation": "[0, 0, 0]",
-                            "scaling": "[0.10000001639127731, 0.10000001639127731, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          }
-                        }
-                      }
-                    ],
-                    "ComponentMaterial": [
-                      {
-                        "ƒ.ComponentMaterial": {
-                          "sortForAlpha": false,
-                          "clrPrimary": "[1, 1, 1, 1]",
-                          "clrSecondary": "[1, 1, 1, 1]",
-                          "pivot": {
-                            "translation": "[0, 0]",
-                            "rotation": 0,
-                            "scaling": "[1, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          },
-                          "idMaterial": "Material|2022-07-12T14:18:24.933Z|27348"
-                        }
-                      }
-                    ]
-                  },
-                  "children": []
+            "components": {
+              "ComponentTransform": [
+                {
+                  "ƒ.ComponentTransform": {
+                    "local": {
+                      "translation": "[0, 0, 0]",
+                      "rotation": "[0, 0, 0]",
+                      "scaling": "[1, 1, 1]"
+                    },
+                    "Component": {
+                      "active": true
+                    }
+                  }
                 }
-              },
-              {
-                "ƒ.Node": {
-                  "name": "Sign",
-                  "active": true,
-                  "components": {},
-                  "children": []
-                }
-              },
-              {
-                "ƒ.Node": {
-                  "name": "CarObstacle",
-                  "active": true,
-                  "components": {
-                    "ComponentTransform": [
-                      {
-                        "ƒ.ComponentTransform": {
-                          "local": {
-                            "translation": "[0, 7, 0]",
-                            "rotation": "[0, 0, 0]",
-                            "scaling": "[0.7499998807907104, 0.7499998807907104, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          }
-                        }
-                      }
-                    ],
-                    "ComponentMesh": [
-                      {
-                        "ƒ.ComponentMesh": {
-                          "idMesh": "MeshCube|2022-07-12T14:18:18.949Z|08921",
-                          "pivot": {
-                            "translation": "[0, 0, 0]",
-                            "rotation": "[0, 0, 0]",
-                            "scaling": "[1, 1, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          }
-                        }
-                      }
-                    ],
-                    "ComponentMaterial": [
-                      {
-                        "ƒ.ComponentMaterial": {
-                          "sortForAlpha": false,
-                          "clrPrimary": "[1, 0, 0, 1]",
-                          "clrSecondary": "[1, 1, 1, 1]",
-                          "pivot": {
-                            "translation": "[0, 0]",
-                            "rotation": 0,
-                            "scaling": "[1, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          },
-                          "idMaterial": "Material|2022-07-12T14:18:24.933Z|27348"
-                        }
-                      }
-                    ]
-                  },
-                  "children": []
-                }
-              },
-              {
-                "ƒ.Node": {
-                  "name": "pothole",
-                  "active": true,
-                  "components": {
-                    "ComponentMesh": [
-                      {
-                        "ƒ.ComponentMesh": {
-                          "idMesh": "MeshCube|2022-07-12T14:18:18.949Z|08921",
-                          "pivot": {
-                            "translation": "[2, -1, 0]",
-                            "rotation": "[0, 0, 0]",
-                            "scaling": "[0.10000000149011612, 0.10000001639127731, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          }
-                        }
-                      }
-                    ],
-                    "ComponentMaterial": [
-                      {
-                        "ƒ.ComponentMaterial": {
-                          "sortForAlpha": false,
-                          "clrPrimary": "[1, 1, 1, 1]",
-                          "clrSecondary": "[1, 1, 1, 1]",
-                          "pivot": {
-                            "translation": "[0, 0]",
-                            "rotation": 0,
-                            "scaling": "[1, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          },
-                          "idMaterial": "Material|2022-07-12T14:18:24.933Z|27348"
-                        }
-                      }
-                    ]
-                  },
-                  "children": []
-                }
-              },
-              {
-                "ƒ.Node": {
-                  "name": "pothole",
-                  "active": true,
-                  "components": {
-                    "ComponentMesh": [
-                      {
-                        "ƒ.ComponentMesh": {
-                          "idMesh": "MeshCube|2022-07-12T14:18:18.949Z|08921",
-                          "pivot": {
-                            "translation": "[0, -1, 0]",
-                            "rotation": "[0, 0, 0]",
-                            "scaling": "[0.10000000894069672, 0.10000001639127731, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          }
-                        }
-                      }
-                    ],
-                    "ComponentMaterial": [
-                      {
-                        "ƒ.ComponentMaterial": {
-                          "sortForAlpha": false,
-                          "clrPrimary": "[1, 1, 1, 1]",
-                          "clrSecondary": "[1, 1, 1, 1]",
-                          "pivot": {
-                            "translation": "[0, 0]",
-                            "rotation": 0,
-                            "scaling": "[-1, 1]"
-                          },
-                          "Component": {
-                            "active": true
-                          },
-                          "idMaterial": "Material|2022-07-12T14:18:24.933Z|27348"
-                        }
-                      }
-                    ]
-                  },
-                  "children": []
-                }
-              }
-            ]
+              ]
+            },
+            "children": []
           }
         },
         {
@@ -243,7 +91,7 @@
                     "pivot": {
                       "translation": "[0, 0, 0]",
                       "rotation": "[0, 0, 0]",
-                      "scaling": "[0.7499998807907104, 0.7499998807907104, 1]"
+                      "scaling": "[0.7499998807907104, 0.7499998807907104, 0.75]"
                     },
                     "Component": {
                       "active": true
@@ -273,9 +121,9 @@
                 {
                   "ƒ.ComponentTransform": {
                     "local": {
-                      "translation": "[0, 1, 0.10000000149011612]",
+                      "translation": "[0, 0.75, 0.4399999976158142]",
                       "rotation": "[0, 0, 0]",
-                      "scaling": "[1, 1, 1]"
+                      "scaling": "[0.9999998807907104, 0.9999998807907104, 1]"
                     },
                     "Component": {
                       "active": true
@@ -297,7 +145,7 @@
                   "ƒ.ComponentMesh": {
                     "idMesh": "MeshCube|2022-07-12T14:18:18.949Z|08921",
                     "pivot": {
-                      "translation": "[0, 3.499999523162842, 0]",
+                      "translation": "[0, 3.5, 0]",
                       "rotation": "[0, 0, 0]",
                       "scaling": "[4, 6.37100076675415, 0.10000000149011612]"
                     },
@@ -328,10 +176,88 @@
             },
             "children": []
           }
+        },
+        {
+          "ƒ.Node": {
+            "name": "Landscape",
+            "active": true,
+            "components": {
+              "ComponentMesh": [
+                {
+                  "ƒ.ComponentMesh": {
+                    "idMesh": "MeshCube|2022-07-12T14:18:18.949Z|08921",
+                    "pivot": {
+                      "translation": "[0, 0, 0]",
+                      "rotation": "[0, 0, 0]",
+                      "scaling": "[20, 20, 0]"
+                    },
+                    "Component": {
+                      "active": true
+                    }
+                  }
+                }
+              ],
+              "ComponentMaterial": [
+                {
+                  "ƒ.ComponentMaterial": {
+                    "sortForAlpha": false,
+                    "clrPrimary": "[1, 1, 1, 1]",
+                    "clrSecondary": "[1, 1, 1, 1]",
+                    "pivot": {
+                      "translation": "[0, 0]",
+                      "rotation": 0,
+                      "scaling": "[1, 1]"
+                    },
+                    "Component": {
+                      "active": true
+                    },
+                    "idMaterial": "Material|2023-06-18T17:30:27.617Z|81762"
+                  }
+                }
+              ],
+              "ComponentTransform": [
+                {
+                  "ƒ.ComponentTransform": {
+                    "local": {
+                      "translation": "[0, 9.5, 0]",
+                      "rotation": "[0, 0, 0]",
+                      "scaling": "[1, 1, 1]"
+                    },
+                    "Component": {
+                      "active": true
+                    }
+                  }
+                }
+              ]
+            },
+            "children": []
+          }
         }
       ],
       "idResource": "Graph|2022-07-12T09:10:18.836Z|32621",
       "type": "Graph"
+    }
+  },
+  "TextureImage|2023-06-18T08:14:47.987Z|66247": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\Sign.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-18T08:14:47.987Z|66247",
+        "name": "Sign",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "TextureImage|2023-06-18T08:15:14.653Z|44181": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\simple-travel-car-top_view.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-18T08:15:14.653Z|44181",
+        "name": "Car_Red",
+        "mipmap": "CRISP"
+      }
     }
   }
 }
