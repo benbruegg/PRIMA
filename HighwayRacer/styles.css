@@ -18,18 +18,50 @@ canvas.fullscreen {
 
 #vui {
   position: absolute;
-  bottom: 10px; 
-  background-color: blue;
-  padding: 5px; 
-  border: 3px; 
+  width: 100vw;
+  height: 100vh;
+  bottom: 10px;
+  padding: 5px;
+  border: 3px;
   border-color: black;
   color: black;
 }
+
 #gameOverScreen {
+  background: white;
+  color: black;
   display: none;
+  justify-content: center;
+  height: 200px;
+  width: 200px;
+  top: 50%;
+  left: 50%;
+  position: absolute;
+  margin: auto;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  border: solid black;
+  border-width: 5px;
+  padding: 10px;
 }
 
 :disabled {
   background: white;
   color: black;
 }
+
+#runtimeStats {
+  position: absolute;
+  top: 50%;
+  width: auto;
+  background: white;
+  color: black;
+  right: 10%;
+  border: solid black;
+  border-width: 5px;
+  padding: 3px;
+}
+
+
+
+

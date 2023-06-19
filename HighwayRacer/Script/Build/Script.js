@@ -2,46 +2,11 @@
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
-    ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
-    class CustomComponentScript extends ƒ.ComponentScript {
-        // Register the script as component for use in the editor via drag&drop
-        static iSubclass = ƒ.Component.registerSubclass(CustomComponentScript);
-        // Properties may be mutated by users in the editor via the automatically created user interface
-        message = "CustomComponentScript added to ";
-        constructor() {
-            super();
-            // Don't start when running in editor
-            if (ƒ.Project.mode == ƒ.MODE.EDITOR)
-                return;
-            // Listen to this component being added to or removed from a node
-            this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
-            this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
-            this.addEventListener("nodeDeserialized" /* NODE_DESERIALIZED */, this.hndEvent);
-        }
-        // Activate the functions of this component as response to events
-        hndEvent = (_event) => {
-            switch (_event.type) {
-                case "componentAdd" /* COMPONENT_ADD */:
-                    ƒ.Debug.log(this.message, this.node);
-                    break;
-                case "componentRemove" /* COMPONENT_REMOVE */:
-                    this.removeEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
-                    this.removeEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
-                    break;
-                case "nodeDeserialized" /* NODE_DESERIALIZED */:
-                    // if deserialized the node is now fully reconstructed and access to all its components and children is possible
-                    break;
-            }
-        };
-    }
-    Script.CustomComponentScript = CustomComponentScript;
-})(Script || (Script = {}));
-var Script;
-(function (Script) {
-    var ƒ = FudgeCore;
     var ƒui = FudgeUserInterface;
     class GameState extends ƒ.Mutable {
         score = 0;
+        carSpeed = 0;
+        distanceTraveled = 0;
         constructor() {
             super();
             let domHud = document.querySelector("div#vui");
@@ -68,26 +33,35 @@ var Script;
     let gameState;
     let gameSpeed = 0.1;
     let roadAnimationFramerate = 4;
-    const collisionThreshold = 0.5; // Adjust this value to set the collision threshold
+    let gameOver = false;
+    let crashSound;
+    let carPassingSound;
+    let truckHornSound;
+    let config;
     // Define custom event names
     const EVENT_GAME_OVER = "gameOver";
     class Obstacle extends ƒ.Node {
-        passed = false; // Add a passed property to track if the obstacle has been passed
-        constructor(texture, spinning) {
+        passed = false;
+        constructor(texture, scaling) {
             super("Obstacle");
             this.addComponent(new ƒ.ComponentTransform());
             let mesh = new ƒ.MeshSprite();
             this.addComponent(new ƒ.ComponentMesh(mesh));
+            let obstacleMesh = this.getComponent(ƒ.ComponentMesh);
+            obstacleMesh.mtxPivot.scale(scaling);
             let textureImage = new ƒ.TextureImage();
             textureImage.image = texture.image;
             let material = new ƒ.Material("ObstacleMaterial", ƒ.ShaderLitTextured, new ƒ.CoatTextured(new ƒ.Color(1, 1, 1, 1), textureImage));
             let cmpMaterial = new ƒ.ComponentMaterial(material);
             this.addComponent(cmpMaterial);
+            this.addComponent(new Script.PulseSign);
             // Add the obstacle to the obstacles node
             obstacles.appendChild(this);
         }
     }
     async function start(_event) {
+        let response = await fetch("config.json");
+        let config = await response.json();
         viewport = _event.detail;
         viewport.camera.attachToNode(road);
         viewport.camera.mtxPivot.translate(new ƒ.Vector3(0, 3.185, -10.9));
@@ -105,23 +79,28 @@ var Script;
         car.addChild(carsprite);
         road.getComponent(ƒ.ComponentMaterial).activate(false);
         car.getComponent(ƒ.ComponentMaterial).activate(false);
+        crashSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[0];
+        truckHornSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[1];
+        carPassingSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[2];
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(); // start the game loop to continuously draw the viewport, update the audiosystem and drive the physics i/a
         // Create instances of obstacles
         createSignObstacle();
     }
     function update(_event) {
+        if (gameOver)
+            return;
         if (car.mtxLocal.translation.x < 1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D])) {
-            carControl.set(0.07, 0, 0);
+            carControl.set(0.03, 0, 0);
         }
         else if (car.mtxLocal.translation.x > -1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A])) {
-            carControl.set(-0.07, 0, 0);
+            carControl.set(-0.03, 0, 0);
         }
         else if (car.mtxLocal.translation.y > 0.55 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S])) {
-            carControl.set(0, -0.07, 0);
+            carControl.set(0, -0.03, 0);
         }
         else if (car.mtxLocal.translation.y < 5.8 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W])) {
-            carControl.set(0, 0.07, 0);
+            carControl.set(0, 0.03, 0);
         }
         else {
             carControl.set(0, 0, 0);
@@ -139,9 +118,16 @@ var Script;
             // Check for collision with the car
             checkCollision(car, obstacle);
         }
-        gameSpeed = +0.001 * ƒ.Loop.timeFrameReal / 1000;
-        // Update the speed of the signs
-        speed.y -= gameSpeed;
+        //set gamespeed increase per second
+        gameSpeed = +0.001 * ƒ.Loop.timeFrameStartReal / 1000;
+        // Update the speed of the signs 
+        speed.y -= gameSpeed / 1000;
+        gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
+        // Assuming timeElapsed is given in milliseconds
+        const timeElapsedinSeconds = ƒ.Loop.timeFrameReal / 1000;
+        const distance = (gameState.carSpeed * timeElapsedinSeconds) / 3600; // Distance in kilometers
+        gameState.distanceTraveled += distance;
+        gameState.distanceTraveled = Number(gameState.distanceTraveled.toFixed(3));
         roadAnimationFramerate += gameSpeed;
         roadsprite.framerate = roadAnimationFramerate;
         car.mtxLocal.translate(carControl);
@@ -151,24 +137,29 @@ var Script;
     function checkCollision(car, obstacle) {
         const carPosition = car.mtxLocal.translation;
         const obstaclePosition = obstacle.mtxLocal.translation;
-        if (Math.abs(carPosition.x - obstaclePosition.x) < collisionThreshold &&
-            Math.abs(carPosition.y - obstaclePosition.y) < collisionThreshold &&
-            Math.abs(carPosition.z - obstaclePosition.z) < collisionThreshold) {
+        const carSize = car.getComponent(ƒ.ComponentMesh).mtxPivot.scaling;
+        const obstacleSize = obstacle.getComponent(ƒ.ComponentMesh).mtxPivot.scaling;
+        const collisionThresholdX = (carSize.x + obstacleSize.x) / 2;
+        const collisionThresholdY = (carSize.y + obstacleSize.y) / 2;
+        if (Math.abs(carPosition.x - obstaclePosition.x) < collisionThresholdX &&
+            Math.abs(carPosition.y - obstaclePosition.y) < collisionThresholdY) {
+            // Collision detected   
+            crashSound.play(true);
             const event = new CustomEvent(EVENT_GAME_OVER);
             document.dispatchEvent(event);
         }
         else if (carPosition.y > obstaclePosition.y && !obstacle.passed) {
+            carPassingSound.play(true);
             obstacle.passed = true; // Mark the obstacle as passed
             gameState.score++;
-            console.log("Score:", gameState.score);
-            // Play sound effect or perform other actions
         }
     }
     function handleGameOver() {
         // Stop the game loop
+        ƒ.Loop.stop();
+        gameOver = true;
         let gameOverScreen = document.querySelector("#gameOverScreen");
         gameOverScreen.style.display = "block";
-        ƒ.Loop.stop();
         console.log("Game Over");
     }
     function getRandomXValue() {
@@ -181,8 +172,7 @@ var Script;
     }
     function createSignObstacle() {
         const signTexture = new ƒ.TextureImage("Textures/Sign.png");
-        const obstacle = new Obstacle(signTexture, false); // Set spinning to false for signs
-        // Set the position, rotation, or any other properties specific to each obstacle instance
+        const obstacle = new Obstacle(signTexture, new ƒ.Vector3(1, 1, 1));
         // Randomly set the x and y coordinates within a specific range
         obstacle.mtxLocal.translation = new ƒ.Vector3(getRandomXValue(), getRandomNumber(7, 7), 0);
         obstacles.appendChild(obstacle);
@@ -223,5 +213,56 @@ var Script;
         sprite.addComponent(cmpTransfrom);
         return sprite;
     }
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
+    ƒ.Project.registerScriptNamespace(Script);
+    class PulseSign extends ƒ.ComponentScript {
+        static iSubclass = ƒ.Component.registerSubclass(PulseSign);
+        message = "CustomComponentScript added to ";
+        originalScale = new ƒ.Vector2(1, 1);
+        targetScale = new ƒ.Vector2(0.7, 0.7);
+        pulseDuration = 1; // Duration of one pulsation cycle in seconds
+        timer = 0; // Timer to track the pulsation duration
+        constructor() {
+            super();
+            if (ƒ.Project.mode == ƒ.MODE.EDITOR)
+                return;
+            this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
+            this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+            this.addEventListener("nodeDeserialized" /* NODE_DESERIALIZED */, this.hndEvent);
+        }
+        hndEvent = (_event) => {
+            switch (_event.type) {
+                case "componentAdd" /* COMPONENT_ADD */:
+                    ƒ.Debug.log(this.message, this.node);
+                    this.startPulsation();
+                    break;
+                case "componentRemove" /* COMPONENT_REMOVE */:
+                    this.removeEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
+                    this.removeEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+                    break;
+                case "nodeDeserialized" /* NODE_DESERIALIZED */:
+                    // If deserialized, the node is now fully reconstructed and access to all its components and children is possible
+                    break;
+            }
+        };
+        startPulsation() {
+            ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+        }
+        update = () => {
+            const deltaTime = ƒ.Loop.timeFrameStartReal / 1000;
+            this.timer += deltaTime;
+            const t = this.timer / this.pulseDuration;
+            const scaleFactor = 0.1 * (Math.sin(t * Math.PI) + 1);
+            const interpolatedScale = new ƒ.Vector2(this.originalScale.x * (1 - scaleFactor) + this.targetScale.x * scaleFactor, this.originalScale.y * (1 - scaleFactor) + this.targetScale.y * scaleFactor);
+            this.node.getComponent(ƒ.ComponentTransform).mtxLocal.scaling = new ƒ.Vector3(interpolatedScale.x, interpolatedScale.y, 1);
+            if (this.timer >= this.pulseDuration) {
+                this.timer -= this.pulseDuration;
+            }
+        };
+    }
+    Script.PulseSign = PulseSign;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

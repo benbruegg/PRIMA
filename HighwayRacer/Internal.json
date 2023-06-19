@@ -42,6 +42,38 @@
       }
     }
   },
+  "Audio|2023-06-19T19:27:04.668Z|27120": {
+    "ƒ.Audio": {
+      "url": "Sound\\engine.mp3",
+      "idResource": "Audio|2023-06-19T19:27:04.668Z|27120",
+      "name": "Engine",
+      "type": "Audio"
+    }
+  },
+  "Audio|2023-06-19T19:27:57.388Z|66927": {
+    "ƒ.Audio": {
+      "url": "Sound\\crash.mp3",
+      "idResource": "Audio|2023-06-19T19:27:57.388Z|66927",
+      "name": "Crash",
+      "type": "Audio"
+    }
+  },
+  "Audio|2023-06-19T19:28:01.218Z|38551": {
+    "ƒ.Audio": {
+      "url": "Sound\\truck_horn.mp3",
+      "idResource": "Audio|2023-06-19T19:28:01.218Z|38551",
+      "name": "TruckHorn",
+      "type": "Audio"
+    }
+  },
+  "Audio|2023-06-19T19:28:09.694Z|28118": {
+    "ƒ.Audio": {
+      "url": "Sound\\car-pass-by.mp3",
+      "idResource": "Audio|2023-06-19T19:28:09.694Z|28118",
+      "name": "CarPassing",
+      "type": "Audio"
+    }
+  },
   "Graph|2022-07-12T09:10:18.836Z|32621": {
     "ƒ.Graph": {
       "name": "Game",
@@ -75,7 +107,53 @@
           "ƒ.Node": {
             "name": "Sound",
             "active": true,
-            "components": {},
+            "components": {
+              "ComponentAudioListener": [
+                {
+                  "ƒ.ComponentAudioListener": {
+                    "active": true
+                  }
+                }
+              ],
+              "ComponentAudio": [
+                {
+                  "ƒ.ComponentAudio": {
+                    "active": true,
+                    "idResource": "Audio|2023-06-19T19:27:57.388Z|66927",
+                    "playing": false,
+                    "loop": false,
+                    "volume": 1
+                  }
+                },
+                {
+                  "ƒ.ComponentAudio": {
+                    "active": true,
+                    "idResource": "Audio|2023-06-19T19:28:01.218Z|38551",
+                    "playing": false,
+                    "loop": false,
+                    "volume": 1
+                  }
+                },
+                {
+                  "ƒ.ComponentAudio": {
+                    "active": true,
+                    "idResource": "Audio|2023-06-19T19:28:09.694Z|28118",
+                    "playing": false,
+                    "loop": false,
+                    "volume": 1
+                  }
+                },
+                {
+                  "ƒ.ComponentAudio": {
+                    "active": true,
+                    "idResource": "Audio|2023-06-19T19:27:04.668Z|27120",
+                    "playing": true,
+                    "loop": true,
+                    "volume": 1
+                  }
+                }
+              ]
+            },
             "children": []
           }
         },
@@ -91,7 +169,7 @@
                     "pivot": {
                       "translation": "[0, 0, 0]",
                       "rotation": "[0, 0, 0]",
-                      "scaling": "[0.7499998807907104, 0.7499998807907104, 0.75]"
+                      "scaling": "[0.30000001192092896, 1, 0.5499999523162842]"
                     },
                     "Component": {
                       "active": true
@@ -238,24 +316,13 @@
       "type": "Graph"
     }
   },
-  "TextureImage|2023-06-18T08:14:47.987Z|66247": {
+  "TextureImage|2023-06-19T19:35:34.240Z|11609": {
     "ƒ.TextureImage": {
       "url": "Textures\\Sign.png",
       "type": "TextureImage",
       "Texture": {
-        "idResource": "TextureImage|2023-06-18T08:14:47.987Z|66247",
+        "idResource": "TextureImage|2023-06-19T19:35:34.240Z|11609",
         "name": "Sign",
-        "mipmap": "CRISP"
-      }
-    }
-  },
-  "TextureImage|2023-06-18T08:15:14.653Z|44181": {
-    "ƒ.TextureImage": {
-      "url": "Textures\\simple-travel-car-top_view.png",
-      "type": "TextureImage",
-      "Texture": {
-        "idResource": "TextureImage|2023-06-18T08:15:14.653Z|44181",
-        "name": "Car_Red",
         "mipmap": "CRISP"
       }
     }

@@ -76,6 +76,11 @@
                 canvas.dispatchEvent(new CustomEvent("interactiveViewportStarted", { bubbles: true, detail: viewport }));
             }
         })(document.head.querySelector("meta[autoView]").getAttribute("autoView"));
+
+        function restartGame() {
+            // Reload the page to reset the game
+            location.reload();
+        }
     </script>
 </head>
 
@@ -89,12 +94,45 @@
     <canvas class="fullscreen">
     </canvas>
     <div id="vui">
+        <div id="runtimeStats">
+            <p>
+                <b>Score</b> <input key="score" disabled="" />
+            </p>
+            <p>
+                <b>Speed</b> <input key="carSpeed" disabled="" /> km/h
+            </p>
+            <p>
+                <b>Distance</b> <input key="distanceTraveled" disabled="" /> km
+            </p>
+        </div>
         <div id="gameOverScreen">
             <h1>Game Over!</h1>
-            score <input key="score" disabled/>
-            <button onclick="restartGame()">Restart</button>
-          </div>
+            <p>Score <input key="score" disabled="" />
+            </p>
+            <p>
+                <button onclick="restartGame()">Restart</button>
+            </p>
+        </div>
+
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

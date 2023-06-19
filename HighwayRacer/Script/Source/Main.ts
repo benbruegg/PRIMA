@@ -4,6 +4,12 @@ namespace Script {
 
   document.addEventListener("interactiveViewportStarted", <EventListener><unknown>start);
   ƒ.Debug.info("Main Program Template running!");
+
+
+  interface Config {
+    drain: number;
+  }
+
   let viewport: ƒ.Viewport;
   let car: ƒ.Node;
   let obstacles: ƒ.Node;
@@ -15,22 +21,29 @@ namespace Script {
   let gameState: GameState;
   let gameSpeed: number = 0.1;
   let roadAnimationFramerate: number = 4;
+  let gameOver: boolean = false;
+  let crashSound: ƒ.ComponentAudio;
+  let carPassingSound: ƒ.ComponentAudio;
+  let truckHornSound: ƒ.ComponentAudio;
+  let config: Config;
 
-  const collisionThreshold: number = 0.5; // Adjust this value to set the collision threshold
+
   // Define custom event names
   const EVENT_GAME_OVER: string = "gameOver";
 
   class Obstacle extends ƒ.Node {
 
-    public passed: boolean = false; // Add a passed property to track if the obstacle has been passed
+    public passed: boolean = false; 
 
-    constructor(texture: ƒ.TextureImage, spinning: boolean) {
+    constructor(texture: ƒ.TextureImage, scaling: ƒ.Vector3) {
       super("Obstacle");
 
       this.addComponent(new ƒ.ComponentTransform());
       let mesh = new ƒ.MeshSprite();
       this.addComponent(new ƒ.ComponentMesh(mesh));
 
+      let obstacleMesh = this.getComponent(ƒ.ComponentMesh);
+      obstacleMesh.mtxPivot.scale(scaling);
       let textureImage = new ƒ.TextureImage();
       textureImage.image = texture.image;
 
@@ -38,19 +51,26 @@ namespace Script {
       let cmpMaterial = new ƒ.ComponentMaterial(material);
       this.addComponent(cmpMaterial);
 
+      this.addComponent(new PulseSign);
+
       // Add the obstacle to the obstacles node
       obstacles.appendChild(this);
     }
 
   }
 
-  async function start(_event: CustomEvent): Promise<void> {
+    async function start(_event: CustomEvent): Promise<void> {
+    let response: Response = await fetch("config.json");
+    let config: Config = await response.json();
     viewport = _event.detail;
     viewport.camera.attachToNode(road);
     viewport.camera.mtxPivot.translate(new ƒ.Vector3(0, 3.185, -10.9));
     viewport.camera.mtxPivot.rotateY(180, true);
 
     gameState = new GameState();
+
+
+
     // Listen for the game over event
     document.addEventListener(EVENT_GAME_OVER, handleGameOver);
 
@@ -67,6 +87,10 @@ namespace Script {
     road.getComponent(ƒ.ComponentMaterial).activate(false);
     car.getComponent(ƒ.ComponentMaterial).activate(false);
 
+    crashSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[0];
+    truckHornSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[1];
+    carPassingSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[2];
+
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
     ƒ.Loop.start();  // start the game loop to continuously draw the viewport, update the audiosystem and drive the physics i/a
 
@@ -75,22 +99,25 @@ namespace Script {
   }
 
   function update(_event: Event): void {
+    if (gameOver)
+      return;
+
     if (car.mtxLocal.translation.x < 1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D])) {
-      carControl.set(0.07, 0, 0);
+      carControl.set(0.03, 0, 0);
     }
     else if (car.mtxLocal.translation.x > -1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A])) {
-      carControl.set(-0.07, 0, 0);
+      carControl.set(-0.03, 0, 0);
     }
     else if (car.mtxLocal.translation.y > 0.55 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S])) {
-      carControl.set(0, -0.07, 0);
+      carControl.set(0, -0.03, 0);
     }
     else if (car.mtxLocal.translation.y < 5.8 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W])) {
-      carControl.set(0, 0.07, 0);
+      carControl.set(0, 0.03, 0);
     }
     else {
       carControl.set(0, 0, 0);
     }
-  
+
 
     // Move the signs and check for collisions
     for (const obstacle of obstacles.getChildren()) {
@@ -107,12 +134,24 @@ namespace Script {
       checkCollision(car, obstacle);
     }
 
-    gameSpeed =+ 0.001 * ƒ.Loop.timeFrameReal / 1000;
-    // Update the speed of the signs
-    speed.y -= gameSpeed;
+    //set gamespeed increase per second
+    gameSpeed = + 0.001 * ƒ.Loop.timeFrameStartReal / 1000;
+
+    // Update the speed of the signs 
+    speed.y -= gameSpeed / 1000;
+
+    gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
+    // Assuming timeElapsed is given in milliseconds
+
+    const timeElapsedinSeconds: number = ƒ.Loop.timeFrameReal / 1000;
+    const distance: number = (gameState.carSpeed * timeElapsedinSeconds) / 3600; // Distance in kilometers
+    gameState.distanceTraveled += distance;
+
+    gameState.distanceTraveled = Number(gameState.distanceTraveled.toFixed(3));
 
     roadAnimationFramerate += gameSpeed;
     roadsprite.framerate = roadAnimationFramerate;
+    
 
     car.mtxLocal.translate(carControl);
     viewport.draw();
@@ -122,26 +161,34 @@ namespace Script {
   function checkCollision(car: ƒ.Node, obstacle: ƒ.Node): void {
     const carPosition = car.mtxLocal.translation;
     const obstaclePosition = obstacle.mtxLocal.translation;
+    const carSize = car.getComponent(ƒ.ComponentMesh).mtxPivot.scaling;
+    const obstacleSize = obstacle.getComponent(ƒ.ComponentMesh).mtxPivot.scaling;
+
+    const collisionThresholdX = (carSize.x + obstacleSize.x) / 2;
+    const collisionThresholdY = (carSize.y + obstacleSize.y) / 2;
+
     if (
-      Math.abs(carPosition.x - obstaclePosition.x) < collisionThreshold &&
-      Math.abs(carPosition.y - obstaclePosition.y) < collisionThreshold &&
-      Math.abs(carPosition.z - obstaclePosition.z) < collisionThreshold
+      Math.abs(carPosition.x - obstaclePosition.x) < collisionThresholdX &&
+      Math.abs(carPosition.y - obstaclePosition.y) < collisionThresholdY
     ) {
+      // Collision detected   
+      crashSound.play(true);
       const event: CustomEvent = new CustomEvent(EVENT_GAME_OVER);
       document.dispatchEvent(event);
     } else if (carPosition.y > obstaclePosition.y && !obstacle.passed) {
+      carPassingSound.play(true);
       obstacle.passed = true; // Mark the obstacle as passed
       gameState.score++;
-      console.log("Score:", gameState.score);
-      // Play sound effect or perform other actions
-    }
+      
+    } 
+    
   }
-
   function handleGameOver(): void {
     // Stop the game loop
+    ƒ.Loop.stop();
+    gameOver = true;
     let gameOverScreen: HTMLDivElement = document.querySelector("#gameOverScreen");
     gameOverScreen.style.display = "block";
-    ƒ.Loop.stop();
     console.log("Game Over");
   }
 
@@ -158,8 +205,7 @@ namespace Script {
 
   function createSignObstacle(): void {
     const signTexture: ƒ.TextureImage = new ƒ.TextureImage("Textures/Sign.png");
-    const obstacle: Obstacle = new Obstacle(signTexture, false); // Set spinning to false for signs
-    // Set the position, rotation, or any other properties specific to each obstacle instance
+    const obstacle: Obstacle = new Obstacle(signTexture, new ƒ.Vector3(1, 1, 1));
     // Randomly set the x and y coordinates within a specific range
     obstacle.mtxLocal.translation = new ƒ.Vector3(getRandomXValue(), getRandomNumber(7, 7), 0);
     obstacles.appendChild(obstacle);
