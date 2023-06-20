@@ -416,6 +416,8 @@ declare namespace FudgeCore {
         private captures;
         private active;
       passed: any;
+      speedModifier: Vector3;
+      obstacleSpeedModifier: number;
         /**
          * Creates a new node with a name and initializes all attributes
          */

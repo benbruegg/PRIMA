@@ -25,6 +25,7 @@ canvas.fullscreen {
   border: 3px;
   border-color: black;
   color: black;
+  cursor: none;
 }
 
 #gameOverScreen {

@@ -7,41 +7,46 @@ namespace Script {
 
 
   interface Config {
-    drain: number;
+    gameSpeed: number;
+    obstacleSpeed: ƒ.Vector3;
   }
 
   let viewport: ƒ.Viewport;
   let car: ƒ.Node;
   let obstacles: ƒ.Node;
-  let speed: ƒ.Vector3 = new ƒ.Vector3(0, -0.001, 0);
+  let obstacleSpeed: ƒ.Vector3;
   let carControl: ƒ.Vector3 = new ƒ.Vector3(0, 0, 0);
   let road: ƒ.Node;
   let roadsprite: ƒAid.NodeSprite;
   let carsprite: ƒAid.NodeSprite;
   let gameState: GameState;
-  let gameSpeed: number = 0.1;
+  let gameSpeed: number;
   let roadAnimationFramerate: number = 4;
   let gameOver: boolean = false;
+  let engineSound: ƒ.ComponentAudio;
   let crashSound: ƒ.ComponentAudio;
   let carPassingSound: ƒ.ComponentAudio;
   let truckHornSound: ƒ.ComponentAudio;
+  let obstacleCreated = false;
+  let obstacleCreationTimeout: number;
   let config: Config;
 
 
-  // Define custom event names
+  // declare Game Over Event
   const EVENT_GAME_OVER: string = "gameOver";
 
+  //Class to define obstacles as nodes
   class Obstacle extends ƒ.Node {
+    public passed: boolean = false;
+    declare public obstacleSpeedModifier: number;
 
-    public passed: boolean = false; 
-
-    constructor(texture: ƒ.TextureImage, scaling: ƒ.Vector3) {
+    constructor(texture: ƒ.TextureImage, scaling: ƒ.Vector3, obstacleSpeedModifier: number, isPulsing: boolean) {
       super("Obstacle");
 
+      this.obstacleSpeedModifier = obstacleSpeedModifier;
       this.addComponent(new ƒ.ComponentTransform());
       let mesh = new ƒ.MeshSprite();
       this.addComponent(new ƒ.ComponentMesh(mesh));
-
       let obstacleMesh = this.getComponent(ƒ.ComponentMesh);
       obstacleMesh.mtxPivot.scale(scaling);
       let textureImage = new ƒ.TextureImage();
@@ -51,25 +56,29 @@ namespace Script {
       let cmpMaterial = new ƒ.ComponentMaterial(material);
       this.addComponent(cmpMaterial);
 
-      this.addComponent(new PulseSign);
+      // check if the obstacle is supposed to be pulsing to add Scriptcomponent
+      if (isPulsing) {
+        this.addComponent(new Pulsing());
+      }
 
-      // Add the obstacle to the obstacles node
       obstacles.appendChild(this);
     }
-
   }
 
-    async function start(_event: CustomEvent): Promise<void> {
+  async function start(_event: CustomEvent): Promise<void> {
+
     let response: Response = await fetch("config.json");
     let config: Config = await response.json();
+
+    gameSpeed = config.gameSpeed;
+    obstacleSpeed = config.obstacleSpeed;
+
     viewport = _event.detail;
     viewport.camera.attachToNode(road);
     viewport.camera.mtxPivot.translate(new ƒ.Vector3(0, 3.185, -10.9));
     viewport.camera.mtxPivot.rotateY(180, true);
 
     gameState = new GameState();
-
-
 
     // Listen for the game over event
     document.addEventListener(EVENT_GAME_OVER, handleGameOver);
@@ -78,6 +87,7 @@ namespace Script {
     car = graph.getChildrenByName("Car")[0];
     obstacles = graph.getChildrenByName("Obstacles")[0];
     road = graph.getChildrenByName("Background")[0];
+
     roadsprite = await createRoadSprite();
     road.addChild(roadsprite);
 
@@ -87,15 +97,18 @@ namespace Script {
     road.getComponent(ƒ.ComponentMaterial).activate(false);
     car.getComponent(ƒ.ComponentMaterial).activate(false);
 
+    engineSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[3];
     crashSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[0];
     truckHornSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[1];
     carPassingSound = graph.getChildrenByName("Sound")[0].getComponents(ƒ.ComponentAudio)[2];
 
+
+    // Create instances of obstacles
+    createObstacle();
+    
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
     ƒ.Loop.start();  // start the game loop to continuously draw the viewport, update the audiosystem and drive the physics i/a
 
-    // Create instances of obstacles
-    createSignObstacle();
   }
 
   function update(_event: Event): void {
@@ -103,16 +116,16 @@ namespace Script {
       return;
 
     if (car.mtxLocal.translation.x < 1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D])) {
-      carControl.set(0.03, 0, 0);
+      carControl.set(0.06, 0, 0);
     }
     else if (car.mtxLocal.translation.x > -1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A])) {
-      carControl.set(-0.03, 0, 0);
+      carControl.set(-0.06, 0, 0);
     }
     else if (car.mtxLocal.translation.y > 0.55 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S])) {
-      carControl.set(0, -0.03, 0);
+      carControl.set(0, -0.06, 0);
     }
     else if (car.mtxLocal.translation.y < 5.8 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W])) {
-      carControl.set(0, 0.03, 0);
+      carControl.set(0, 0.06, 0);
     }
     else {
       carControl.set(0, 0, 0);
@@ -121,7 +134,8 @@ namespace Script {
 
     // Move the signs and check for collisions
     for (const obstacle of obstacles.getChildren()) {
-      obstacle.mtxLocal.translate(speed);
+      let obstacleSpeedModifier: number = obstacle["obstacleSpeedModifier"];
+      obstacle.mtxLocal.translateY(obstacleSpeed.y * obstacleSpeedModifier);
       // Check if the sign has moved below a certain y-coordinate
       if (obstacle.mtxLocal.translation.y < -2) {
         obstacles.removeChild(obstacle); // Remove the sign from the obstacles node
@@ -135,10 +149,14 @@ namespace Script {
     }
 
     //set gamespeed increase per second
-    gameSpeed = + 0.001 * ƒ.Loop.timeFrameStartReal / 1000;
+
+    gameSpeed += 0.000001 * ƒ.Loop.timeFrameStartReal / 1000;
+    if (gameSpeed > 0.1) {
+      gameSpeed = 0.1;
+    }
 
     // Update the speed of the signs 
-    speed.y -= gameSpeed / 1000;
+    obstacleSpeed.y -= (gameSpeed / 1000);
 
     gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
     // Assuming timeElapsed is given in milliseconds
@@ -149,9 +167,13 @@ namespace Script {
 
     gameState.distanceTraveled = Number(gameState.distanceTraveled.toFixed(3));
 
+    if (gameState.distanceTraveled > 1.5 && !obstacleCreated) {
+      createObstacle();
+      obstacleCreated = true;
+    }
     roadAnimationFramerate += gameSpeed;
     roadsprite.framerate = roadAnimationFramerate;
-    
+
 
     car.mtxLocal.translate(carControl);
     viewport.draw();
@@ -179,15 +201,20 @@ namespace Script {
       carPassingSound.play(true);
       obstacle.passed = true; // Mark the obstacle as passed
       gameState.score++;
-      
-    } 
-    
+      gameState.finalScore = gameState.score;
+
+    }
+
   }
   function handleGameOver(): void {
     // Stop the game loop
     ƒ.Loop.stop();
+    clearTimeout(obstacleCreationTimeout);
+    engineSound.play(false);
     gameOver = true;
     let gameOverScreen: HTMLDivElement = document.querySelector("#gameOverScreen");
+    let vui: HTMLDivElement = document.querySelector("#vui");
+    vui.style.cursor = "auto";
     gameOverScreen.style.display = "block";
     console.log("Game Over");
   }
@@ -203,24 +230,97 @@ namespace Script {
     return Math.random() * (max - min) + min;
   }
 
-  function createSignObstacle(): void {
-    const signTexture: ƒ.TextureImage = new ƒ.TextureImage("Textures/Sign.png");
-    const obstacle: Obstacle = new Obstacle(signTexture, new ƒ.Vector3(1, 1, 1));
-    // Randomly set the x and y coordinates within a specific range
+
+
+  function createObstacle(): void {
+    const obstacleTextures: ƒ.TextureImage[] = [
+      new ƒ.TextureImage("Textures/Sign.png"),
+      new ƒ.TextureImage("Textures/Pothole.png"),
+      new ƒ.TextureImage("Textures/Truck.png"),
+      new ƒ.TextureImage("Textures/Car_Yellow.png"),
+      new ƒ.TextureImage("Textures/Car_White.png")
+    ];
+
+    const textureIndex: number = Math.floor(Math.random() * obstacleTextures.length);
+    const texture: ƒ.TextureImage = obstacleTextures[textureIndex];
+
+    let scaling: ƒ.Vector3;
+    let isPulsing: boolean;
+    let obstacleSpeedModifier: number;
+
+    if (textureIndex === 0) {
+      // Sign 
+      obstacleSpeedModifier = 0.6;
+      scaling = new ƒ.Vector3(0.8, 0.8, 1);
+      isPulsing = true;
+    } else if (textureIndex === 1) {
+      // Pothole
+      obstacleSpeedModifier = 0.6;
+      scaling = new ƒ.Vector3(0.5, 0.5, 1); // Adjust the scale as needed
+      isPulsing = false;
+    } else if (textureIndex === 2) {
+      // Truck
+      obstacleSpeedModifier = 0.8;
+      truckHornSound.play(true);
+      scaling = new ƒ.Vector3(0.9, 2, 1); // Adjust the scale as needed
+      isPulsing = true;
+    } else if (textureIndex === 3) {
+      // Car_Yellow
+      obstacleSpeedModifier = 1;
+      scaling = new ƒ.Vector3(0.8, 1.2, 1); // Adjust the scale as needed
+      isPulsing = true;
+    } else if (textureIndex === 4) {
+      // Car_White
+      obstacleSpeedModifier = 1.4;
+      scaling = new ƒ.Vector3(0.8, 1.2, 1); // Adjust the scale as needed
+      isPulsing = true;
+    }
+
+    const obstacle = new Obstacle(texture, scaling, obstacleSpeedModifier, isPulsing);
+    obstacle.passed = false;
+
+
+
+    /*
+    let isValidPosition = false;
+    let newXValue: number;
+    const yRange = 5;
+  
+    while (!isValidPosition) {
+      newXValue = getRandomXValue();
+      isValidPosition = true;
+  
+      for (const obstacle of obstacles.getChildren()) {
+        const obstaclePosition = obstacle.mtxLocal.translation;
+        if (
+          obstaclePosition.x === newXValue &&
+          obstaclePosition.y >= obstacle.mtxLocal.translation.y - yRange &&
+          obstaclePosition.y <= obstacle.mtxLocal.translation.y + yRange
+        ) {
+          isValidPosition = false;
+          break;
+        }
+      }
+    }
+  */
     obstacle.mtxLocal.translation = new ƒ.Vector3(getRandomXValue(), getRandomNumber(7, 7), 0);
     obstacles.appendChild(obstacle);
 
-    scheduleNextSignCreation();
+    scheduleNextObstacleCreation();
   }
 
-  function scheduleNextSignCreation(): void {
-    const minInterval: number = 5; // Minimum interval in seconds
-    const maxInterval: number = 10; // Maximum interval in seconds
+
+
+  function scheduleNextObstacleCreation(): void {
+    const minInterval: number = 6 - (gameSpeed * 50); // Minimum interval in seconds
+    const maxInterval: number = 10 - (gameSpeed) * 50; // Maximum interval in seconds
     const interval: number = getRandomNumber(minInterval, maxInterval); // Random interval in seconds
-
-    // Wait for the interval and then create a sign obstacle
-    setTimeout(createSignObstacle, interval * 1000);
+    console.log(interval);
+    console.log("gameSpeed" + gameSpeed)
+    // Wait for the interval and then create a random obstacle
+    obstacleCreationTimeout = setTimeout(createObstacle, interval * 1000);
   }
+
 
   async function createRoadSprite(): Promise<ƒAid.NodeSprite> {
     let imgSpriteSheet: ƒ.TextureImage = new ƒ.TextureImage();

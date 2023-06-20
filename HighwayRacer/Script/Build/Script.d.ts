@@ -2,6 +2,7 @@ declare namespace Script {
     import ƒ = FudgeCore;
     class GameState extends ƒ.Mutable {
         score: number;
+        finalScore: number;
         carSpeed: number;
         distanceTraveled: number;
         constructor();
@@ -12,7 +13,7 @@ declare namespace Script {
 }
 declare namespace Script {
     import ƒ = FudgeCore;
-    class PulseSign extends ƒ.ComponentScript {
+    class Pulsing extends ƒ.ComponentScript {
         static readonly iSubclass: number;
         message: string;
         originalScale: ƒ.Vector2;

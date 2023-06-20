@@ -208,7 +208,8 @@
                     }
                   }
                 }
-              ]
+              ],
+              "Pulsing": []
             },
             "children": []
           }
@@ -316,13 +317,57 @@
       "type": "Graph"
     }
   },
-  "TextureImage|2023-06-19T19:35:34.240Z|11609": {
+  "TextureImage|2023-06-20T07:25:28.268Z|09221": {
     "ƒ.TextureImage": {
       "url": "Textures\\Sign.png",
       "type": "TextureImage",
       "Texture": {
-        "idResource": "TextureImage|2023-06-19T19:35:34.240Z|11609",
-        "name": "Sign",
+        "idResource": "TextureImage|2023-06-20T07:25:28.268Z|09221",
+        "name": "Sign.png",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "TextureImage|2023-06-20T08:51:38.714Z|88494": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\Pothole.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-20T08:51:38.714Z|88494",
+        "name": "Pothole.png",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "TextureImage|2023-06-20T10:31:47.640Z|40795": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\Car_White.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-20T10:31:47.640Z|40795",
+        "name": "Car_White.png",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "TextureImage|2023-06-20T10:31:59.404Z|61331": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\Truck.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-20T10:31:59.404Z|61331",
+        "name": "Truck.png",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "TextureImage|2023-06-20T10:32:08.411Z|55213": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\Car_Yellow.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-20T10:32:08.411Z|55213",
+        "name": "Car_Yellow.png",
         "mipmap": "CRISP"
       }
     }

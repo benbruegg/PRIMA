@@ -4,6 +4,7 @@ import ƒui = FudgeUserInterface;
 
 export class GameState extends ƒ. Mutable {
     public score: number = 0;
+    public finalScore: number = 0;
     public carSpeed: number = 0; 
     public distanceTraveled: number = 0;
     

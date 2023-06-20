@@ -1,4 +1,8 @@
 {
     "gameSpeed": 0.01,
-    "numberOfObstacles": 20
+    "obstacleSpeed":  {
+        "x" : 0,
+        "y" : -0.001,
+        "z" : 0
+     }
 }

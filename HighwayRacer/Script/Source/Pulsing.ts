@@ -2,11 +2,11 @@ namespace Script {
   import ƒ = FudgeCore;
   ƒ.Project.registerScriptNamespace(Script);
 
-  export class PulseSign extends ƒ.ComponentScript {
-    public static readonly iSubclass: number = ƒ.Component.registerSubclass(PulseSign);
+  export class Pulsing extends ƒ.ComponentScript {
+    public static readonly iSubclass: number = ƒ.Component.registerSubclass(Pulsing);
     public message: string = "CustomComponentScript added to ";
-    public originalScale: ƒ.Vector2 = new ƒ.Vector2(1, 1);
-    public targetScale: ƒ.Vector2 = new ƒ.Vector2(0.7, 0.7);
+    public originalScale: ƒ.Vector2 = new ƒ.Vector2(0.8, 0.8);
+    public targetScale: ƒ.Vector2 = new ƒ.Vector2(0.6, 0.6);
     public pulseDuration: number = 1; // Duration of one pulsation cycle in seconds
     public timer: number = 0; // Timer to track the pulsation duration
 
@@ -46,7 +46,7 @@ namespace Script {
 
       this.timer += deltaTime;
       const t: number = this.timer / this.pulseDuration;
-      const scaleFactor: number = 0.1 * (Math.sin(t * Math.PI) + 1);
+      const scaleFactor: number = 0.07 * (Math.sin(t * Math.PI) + 1);
 
       const interpolatedScale: ƒ.Vector2 = new ƒ.Vector2(
         this.originalScale.x * (1 - scaleFactor) + this.targetScale.x * scaleFactor,
