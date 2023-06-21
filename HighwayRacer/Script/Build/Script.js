@@ -19,6 +19,12 @@ var Script;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
+    class Highscore {
+    }
+    Script.Highscore = Highscore;
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
     var ƒ = FudgeCore;
     var ƒAid = FudgeAid;
     document.addEventListener("interactiveViewportStarted", start);
@@ -27,24 +33,25 @@ var Script;
     let car;
     let obstacles;
     let exhaust;
+    let road;
+    let sound;
     let obstacleSpeed;
     let carControl = new ƒ.Vector3(0, 0, 0);
-    let road;
     let roadsprite;
     let exhaustsprite;
     let gameState;
     let gameSpeed;
     let roadAnimationFramerate = 4;
     let gameOver = false;
+    let obstacleCreated = false;
+    let obstacleCreationTimeout;
     let engineSound;
     let crashSound;
     let carPassingSound;
     let truckHornSound;
     let driftSound;
     let carHornSound;
-    let obstacleCreated = false;
-    let obstacleCreationTimeout;
-    let sound;
+    let policeSound;
     let config;
     // declare Game Over Event
     const EVENT_GAME_OVER = "gameOver";
@@ -87,7 +94,6 @@ var Script;
         obstacles = graph.getChildrenByName("Obstacles")[0];
         road = graph.getChildrenByName("Road")[0];
         exhaust = car.getChildrenByName("Exhaust")[0];
-        // exhaust.addEventListener("toggleExhaust", hndExhaust);
         graph.addEventListener("toggleExhaust", hndExhaust);
         document.addEventListener(EVENT_GAME_OVER, handleGameOver);
         document.addEventListener("keydown", carGas);
@@ -109,6 +115,7 @@ var Script;
         engineSound = sound.getComponents(ƒ.ComponentAudio)[3];
         driftSound = sound.getComponents(ƒ.ComponentAudio)[4];
         carHornSound = sound.getComponents(ƒ.ComponentAudio)[5];
+        policeSound = sound.getComponents(ƒ.ComponentAudio)[6];
         // Create instances of obstacles
         createObstacle();
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
@@ -117,18 +124,18 @@ var Script;
     function update(_event) {
         if (gameOver)
             return;
-        // Move the signs and check for collisions
+        // ƒ.Physics.simulate(); 
+        // Move the obstacles and remove them after going out of camera view
         for (const obstacle of obstacles.getChildren()) {
             let obstacleSpeedModifier = obstacle["obstacleSpeedModifier"];
             obstacle.mtxLocal.translateY(obstacleSpeed.y * obstacleSpeedModifier);
-            // Check if the sign has moved below a certain y-coordinate
+            // Check if the obstacle has moved below a certain y-coordinate
             if (obstacle.mtxLocal.translation.y < -2) {
-                obstacles.removeChild(obstacle); // Remove the sign from the obstacles node
+                obstacles.removeChild(obstacle); // Remove the obstacle from the obstacles node
             }
         }
-        // Move the signs and check for collisions
+        // check for collisions
         for (const obstacle of obstacles.getChildren()) {
-            // Check for collision with the car
             checkCollision(car, obstacle);
         }
         //set gamespeed increase per second
@@ -136,14 +143,14 @@ var Script;
         if (gameSpeed > 0.1) {
             gameSpeed = 0.1;
         }
-        // Update the speed of the signs 
+        // Update the speed of the obstacles 
         obstacleSpeed.y -= (gameSpeed / 1000);
         gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
-        // Assuming timeElapsed is given in milliseconds
         const timeElapsedinSeconds = ƒ.Loop.timeFrameReal / 1000;
-        const distance = (gameState.carSpeed * timeElapsedinSeconds) / 3600; // Distance in kilometers
+        const distance = (gameState.carSpeed * timeElapsedinSeconds) / 3600; // Distance in kilometers s = v * t
         gameState.distanceTraveled += distance;
         gameState.distanceTraveled = Number(gameState.distanceTraveled.toFixed(3));
+        // create more obstacles after 1.5km traveled
         if (gameState.distanceTraveled > 1.5 && !obstacleCreated) {
             createObstacle();
             obstacleCreated = true;
@@ -154,6 +161,7 @@ var Script;
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
+    // car movement 
     function carMove() {
         if (car.mtxLocal.translation.x < 1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D])) {
             carControl.set(0.06, 0, 0);
@@ -174,7 +182,6 @@ var Script;
     }
     function handleCollision(event) {
         const collidedObstacle = event.detail.collidedObstacle;
-        console.log(collidedObstacle);
         const gameOverEvent = new Event(EVENT_GAME_OVER);
         document.dispatchEvent(gameOverEvent);
     }
@@ -198,10 +205,21 @@ var Script;
         const obstaclePosition = obstacle.mtxLocal.translation;
         const carSize = car.getComponent(ƒ.ComponentMesh).mtxPivot.scaling;
         const obstacleSize = obstacle.getComponent(ƒ.ComponentMesh).mtxPivot.scaling;
-        const collisionThresholdX = (carSize.x + obstacleSize.x) / 2;
-        const collisionThresholdY = (carSize.y + obstacleSize.y) / 2;
-        if (Math.abs(carPosition.x - obstaclePosition.x) < collisionThresholdX &&
-            Math.abs(carPosition.y - obstaclePosition.y) < collisionThresholdY) {
+        const carHalfWidth = carSize.x / 2;
+        const carHalfHeight = carSize.y / 2;
+        const obstacleHalfWidth = obstacleSize.x / 2;
+        const obstacleHalfHeight = obstacleSize.y / 2;
+        const carCenterX = carPosition.x;
+        const carCenterY = carPosition.y;
+        const obstacleCenterX = obstaclePosition.x;
+        const obstacleCenterY = obstaclePosition.y;
+        // Calculate the distance between the centers of the car and obstacle
+        const dx = carCenterX - obstacleCenterX;
+        const dy = carCenterY - obstacleCenterY;
+        const combinedHalfWidths = carHalfWidth + obstacleHalfWidth;
+        const combinedHalfHeights = carHalfHeight + obstacleHalfHeight;
+        // Check for a collision on the x and y axes
+        if (Math.abs(dx) <= combinedHalfWidths && Math.abs(dy) <= combinedHalfHeights) {
             // Collision detected   
             crashSound.play(true);
             const event = new CustomEvent(EVENT_COLLISION, {
@@ -217,8 +235,8 @@ var Script;
             gameState.finalScore = gameState.score;
         }
     }
+    // Game Stop 
     function handleGameOver() {
-        // Stop the game loop
         ƒ.Loop.stop();
         clearTimeout(obstacleCreationTimeout);
         engineSound.play(false);
@@ -229,6 +247,7 @@ var Script;
         gameOverScreen.style.display = "block";
         console.log("Game Over");
     }
+    // liefert zufällig einen von 4 x Werten der verschiedenen Spuren
     function getRandomXValue() {
         const xValues = [1.5, 0.5, -0.5, -1.5];
         const randomIndex = Math.floor(Math.random() * xValues.length);
@@ -242,7 +261,7 @@ var Script;
             return;
         }
         const obstacleTextures = [
-            new ƒ.TextureImage("Textures/Sign.png"),
+            new ƒ.TextureImage("Textures/Police.png"),
             new ƒ.TextureImage("Textures/Pothole.png"),
             new ƒ.TextureImage("Textures/Truck.png"),
             new ƒ.TextureImage("Textures/Car_Yellow.png"),
@@ -253,16 +272,19 @@ var Script;
         let scaling;
         let isPulsing;
         let obstacleSpeedModifier;
+        let policeSprite;
+        policeSprite = createPoliceSprite(texture);
         if (textureIndex === 0) {
-            // Sign 
-            obstacleSpeedModifier = 0.6;
+            // Police
+            obstacleSpeedModifier = 1;
+            policeSound.play(true);
             scaling = new ƒ.Vector3(0.8, 0.8, 1);
             isPulsing = true;
         }
         else if (textureIndex === 1) {
             // Pothole
             obstacleSpeedModifier = 0.6;
-            scaling = new ƒ.Vector3(0.5, 0.5, 1);
+            scaling = new ƒ.Vector3(0.7, 0.7, 1);
             isPulsing = false;
         }
         else if (textureIndex === 2) {
@@ -287,6 +309,10 @@ var Script;
         }
         const obstacle = new Obstacle(texture, scaling, obstacleSpeedModifier, isPulsing);
         obstacle.passed = false;
+        if (textureIndex === 0) {
+            obstacle.addChild(policeSprite);
+            obstacle.getComponent(ƒ.ComponentMaterial).activate(false);
+        }
         let obstaclePosition;
         let obstaclesInRange;
         do {
@@ -299,7 +325,6 @@ var Script;
                 const obstaclePositionYNew = obstaclePosition.y;
                 const maxXDistance = 0.5;
                 const minYRange = 3;
-                console.log(Math.abs(obstaclePositionY - obstaclePositionYNew) < minYRange);
                 return (Math.abs(obstaclePositionX - obstaclePositionXNew) < maxXDistance &&
                     Math.abs(obstaclePositionY - obstaclePositionYNew) < minYRange);
             });
@@ -334,11 +359,24 @@ var Script;
         await imgSpriteSheet.load("Textures/exhaust.png");
         let coat = new ƒ.CoatTextured(undefined, imgSpriteSheet);
         let animation = new ƒAid.SpriteSheetAnimation("Exhaust", coat);
-        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 85, 172), 5, 344, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(85));
+        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 85, 172), 5, 240, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(85));
         let sprite = new ƒAid.NodeSprite("ExhaustSprite");
         sprite.setAnimation(animation);
         sprite.setFrameDirection(-1);
         sprite.framerate = 24;
+        let cmpTransfrom = new ƒ.ComponentTransform();
+        sprite.addComponent(cmpTransfrom);
+        return sprite;
+    }
+    function createPoliceSprite(texture) {
+        ;
+        let coat = new ƒ.CoatTextured(undefined, texture);
+        let animation = new ƒAid.SpriteSheetAnimation("Police", coat);
+        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(98));
+        let sprite = new ƒAid.NodeSprite("PoliceSprite");
+        sprite.setAnimation(animation);
+        sprite.setFrameDirection(-1);
+        sprite.framerate = 8;
         let cmpTransfrom = new ƒ.ComponentTransform();
         sprite.addComponent(cmpTransfrom);
         return sprite;

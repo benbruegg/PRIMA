@@ -120,6 +120,22 @@
       "type": "Audio"
     }
   },
+  "Audio|2023-06-21T12:09:42.763Z|43845": {
+    "ƒ.Audio": {
+      "url": "Sound\\car_horn.mp3",
+      "idResource": "Audio|2023-06-21T12:09:42.763Z|43845",
+      "name": "CarHorn",
+      "type": "Audio"
+    }
+  },
+  "Audio|2023-06-21T15:55:10.437Z|33630": {
+    "ƒ.Audio": {
+      "url": "Sound\\police.mp3",
+      "idResource": "Audio|2023-06-21T15:55:10.437Z|33630",
+      "name": "Police",
+      "type": "Audio"
+    }
+  },
   "Graph|2022-07-12T09:10:18.836Z|32621": {
     "ƒ.Graph": {
       "name": "Game",
@@ -215,6 +231,15 @@
                     "loop": false,
                     "volume": 1
                   }
+                },
+                {
+                  "ƒ.ComponentAudio": {
+                    "active": true,
+                    "idResource": "Audio|2023-06-21T15:55:10.437Z|33630",
+                    "playing": false,
+                    "loop": false,
+                    "volume": 1
+                  }
                 }
               ]
             },
@@ -233,7 +258,7 @@
                     "pivot": {
                       "translation": "[0, 0, 0]",
                       "rotation": "[0, 0, 0]",
-                      "scaling": "[-0.3999999761581421, 0.7999999523162842, 1]"
+                      "scaling": "[0.5600000023841858, 1, 1]"
                     },
                     "Component": {
                       "active": true
@@ -263,9 +288,9 @@
                 {
                   "ƒ.ComponentTransform": {
                     "local": {
-                      "translation": "[0, 0.8500000238418579, 0.10000000149011612]",
+                      "translation": "[0, 0.9500000476837158, 0.10000000894069672]",
                       "rotation": "[0, 0, 0]",
-                      "scaling": "[0.9999998807907104, 0.9999998807907104, 1]"
+                      "scaling": "[0.9999998807907104, 0.9999998807907104, 0.9999999403953552]"
                     },
                     "Component": {
                       "active": true
@@ -287,7 +312,7 @@
                           "pivot": {
                             "translation": "[0, 0, 0]",
                             "rotation": "[0, 0, 0]",
-                            "scaling": "[0.30999991297721863, 0.4999999701976776, 1]"
+                            "scaling": "[0.5099999308586121, 0.5999999046325684, 1]"
                           },
                           "Component": {
                             "active": true
@@ -317,7 +342,7 @@
                       {
                         "ƒ.ComponentTransform": {
                           "local": {
-                            "translation": "[0, -0.6599999070167542, 0]",
+                            "translation": "[-0.12999999523162842, -0.8899999260902405, 0]",
                             "rotation": "[0, 0, 0]",
                             "scaling": "[1, 1, 1]"
                           },
@@ -492,12 +517,15 @@
       }
     }
   },
-  "Audio|2023-06-21T12:09:42.763Z|43845": {
-    "ƒ.Audio": {
-      "url": "Sound\\car_horn.mp3",
-      "idResource": "Audio|2023-06-21T12:09:42.763Z|43845",
-      "name": "CarHorn",
-      "type": "Audio"
+  "TextureImage|2023-06-21T15:47:28.726Z|83268": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\police.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-21T15:47:28.726Z|83268",
+        "name": "Police.png",
+        "mipmap": "CRISP"
+      }
     }
   }
 }

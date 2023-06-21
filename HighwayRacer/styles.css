@@ -62,7 +62,15 @@ canvas.fullscreen {
   border-width: 5px;
   padding: 3px;
 }
-
+#highscore {
+  position: absolute;
+  left: 10%;
+  background: white;
+  color: black;
+  border: solid black;
+  border-width: 5px;
+  padding: 3px;
+}
 
 
 
