@@ -20,7 +20,7 @@
   },
   "Material|2023-06-18T17:30:27.617Z|81762": {
     "ƒ.Material": {
-      "name": "ShaderLitTextured",
+      "name": "BackgroundMaterial",
       "idResource": "Material|2023-06-18T17:30:27.617Z|81762",
       "shader": "ShaderLitTextured",
       "coat": {
@@ -74,6 +74,52 @@
       "type": "Audio"
     }
   },
+  "MeshSprite|2023-06-20T20:19:11.112Z|71547": {
+    "ƒ.MeshSprite": {
+      "idResource": "MeshSprite|2023-06-20T20:19:11.112Z|71547",
+      "name": "MeshSprite",
+      "type": "MeshSprite"
+    }
+  },
+  "Material|2023-06-21T07:22:11.929Z|85251": {
+    "ƒ.Material": {
+      "name": "CarMaterial",
+      "idResource": "Material|2023-06-21T07:22:11.929Z|85251",
+      "shader": "ShaderLitTextured",
+      "coat": {
+        "ƒ.CoatTextured": {
+          "color": "[1, 1, 1, 1]",
+          "idTexture": "TextureImage|2023-06-21T07:23:07.773Z|79183"
+        }
+      }
+    }
+  },
+  "TextureImage|2023-06-21T07:23:07.773Z|79183": {
+    "ƒ.TextureImage": {
+      "url": "Textures\\simple-travel-car-top_view.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2023-06-21T07:23:07.773Z|79183",
+        "name": "UserCar",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "MeshSprite|2023-06-21T07:25:40.524Z|47564": {
+    "ƒ.MeshSprite": {
+      "idResource": "MeshSprite|2023-06-21T07:25:40.524Z|47564",
+      "name": "MeshSprite",
+      "type": "MeshSprite"
+    }
+  },
+  "Audio|2023-06-21T10:35:47.992Z|42245": {
+    "ƒ.Audio": {
+      "url": "Sound\\drift.mp3",
+      "idResource": "Audio|2023-06-21T10:35:47.992Z|42245",
+      "name": "Drift",
+      "type": "Audio"
+    }
+  },
   "Graph|2022-07-12T09:10:18.836Z|32621": {
     "ƒ.Graph": {
       "name": "Game",
@@ -122,7 +168,7 @@
                     "idResource": "Audio|2023-06-19T19:27:57.388Z|66927",
                     "playing": false,
                     "loop": false,
-                    "volume": 1
+                    "volume": 0.19999998807907104
                   }
                 },
                 {
@@ -149,6 +195,24 @@
                     "idResource": "Audio|2023-06-19T19:27:04.668Z|27120",
                     "playing": true,
                     "loop": true,
+                    "volume": 0.7999999523162842
+                  }
+                },
+                {
+                  "ƒ.ComponentAudio": {
+                    "active": true,
+                    "idResource": "Audio|2023-06-21T10:35:47.992Z|42245",
+                    "playing": false,
+                    "loop": false,
+                    "volume": 0.19999992847442627
+                  }
+                },
+                {
+                  "ƒ.ComponentAudio": {
+                    "active": true,
+                    "idResource": "Audio|2023-06-21T12:09:42.763Z|43845",
+                    "playing": false,
+                    "loop": false,
                     "volume": 1
                   }
                 }
@@ -165,11 +229,11 @@
               "ComponentMesh": [
                 {
                   "ƒ.ComponentMesh": {
-                    "idMesh": "MeshCube|2022-07-12T14:18:18.949Z|08921",
+                    "idMesh": "MeshSprite|2023-06-21T07:25:40.524Z|47564",
                     "pivot": {
                       "translation": "[0, 0, 0]",
                       "rotation": "[0, 0, 0]",
-                      "scaling": "[0.30000001192092896, 1, 0.5499999523162842]"
+                      "scaling": "[-0.3999999761581421, 0.7999999523162842, 1]"
                     },
                     "Component": {
                       "active": true
@@ -181,7 +245,7 @@
                 {
                   "ƒ.ComponentMaterial": {
                     "sortForAlpha": false,
-                    "clrPrimary": "[0.12156862745098039, 0.058823529411764705, 1, 1]",
+                    "clrPrimary": "[1, 1, 1, 1]",
                     "clrSecondary": "[1, 1, 1, 1]",
                     "pivot": {
                       "translation": "[0, 0]",
@@ -191,7 +255,7 @@
                     "Component": {
                       "active": true
                     },
-                    "idMaterial": "Material|2022-07-12T14:18:24.933Z|27348"
+                    "idMaterial": "Material|2023-06-21T07:22:11.929Z|85251"
                   }
                 }
               ],
@@ -199,7 +263,7 @@
                 {
                   "ƒ.ComponentTransform": {
                     "local": {
-                      "translation": "[0, 0.75, 0.4399999976158142]",
+                      "translation": "[0, 0.8500000238418579, 0.10000000149011612]",
                       "rotation": "[0, 0, 0]",
                       "scaling": "[0.9999998807907104, 0.9999998807907104, 1]"
                     },
@@ -208,15 +272,71 @@
                     }
                   }
                 }
-              ],
-              "Pulsing": []
+              ]
             },
-            "children": []
+            "children": [
+              {
+                "ƒ.Node": {
+                  "name": "Exhaust",
+                  "active": true,
+                  "components": {
+                    "ComponentMesh": [
+                      {
+                        "ƒ.ComponentMesh": {
+                          "idMesh": "MeshSprite|2023-06-20T20:19:11.112Z|71547",
+                          "pivot": {
+                            "translation": "[0, 0, 0]",
+                            "rotation": "[0, 0, 0]",
+                            "scaling": "[0.30999991297721863, 0.4999999701976776, 1]"
+                          },
+                          "Component": {
+                            "active": true
+                          }
+                        }
+                      }
+                    ],
+                    "ComponentMaterial": [
+                      {
+                        "ƒ.ComponentMaterial": {
+                          "sortForAlpha": false,
+                          "clrPrimary": "[0.615686274509804, 0.24705882352941178, 0.24705882352941178, 1]",
+                          "clrSecondary": "[1, 1, 1, 1]",
+                          "pivot": {
+                            "translation": "[0, 0]",
+                            "rotation": 0,
+                            "scaling": "[1, 1]"
+                          },
+                          "Component": {
+                            "active": true
+                          },
+                          "idMaterial": "Material|2022-07-12T14:18:24.933Z|27348"
+                        }
+                      }
+                    ],
+                    "ComponentTransform": [
+                      {
+                        "ƒ.ComponentTransform": {
+                          "local": {
+                            "translation": "[0, -0.6599999070167542, 0]",
+                            "rotation": "[0, 0, 0]",
+                            "scaling": "[1, 1, 1]"
+                          },
+                          "Component": {
+                            "active": true
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "children": []
+                }
+              }
+            ]
           }
         },
         {
           "ƒ.Node": {
-            "name": "Background",
+            "name": "Road",
             "active": true,
             "components": {
               "ComponentMesh": [
@@ -224,9 +344,9 @@
                   "ƒ.ComponentMesh": {
                     "idMesh": "MeshCube|2022-07-12T14:18:18.949Z|08921",
                     "pivot": {
-                      "translation": "[0, 3.5, 0]",
+                      "translation": "[0, 3.499999523162842, 0]",
                       "rotation": "[0, 0, 0]",
-                      "scaling": "[4, 6.37100076675415, 0.10000000149011612]"
+                      "scaling": "[4, 6.371000289916992, 0.10000000149011612]"
                     },
                     "Component": {
                       "active": true
@@ -370,6 +490,14 @@
         "name": "Car_Yellow.png",
         "mipmap": "CRISP"
       }
+    }
+  },
+  "Audio|2023-06-21T12:09:42.763Z|43845": {
+    "ƒ.Audio": {
+      "url": "Sound\\car_horn.mp3",
+      "idResource": "Audio|2023-06-21T12:09:42.763Z|43845",
+      "name": "CarHorn",
+      "type": "Audio"
     }
   }
 }
