@@ -39,7 +39,6 @@ namespace Script {
   let carHornSound: ƒ.ComponentAudio;
   let policeSound: ƒ.ComponentAudio;
 
-
   let config: Config;
 
 
@@ -105,15 +104,14 @@ namespace Script {
 
     exhaust.activate(false);
     roadsprite = await createRoadSprite();
-
     road.addChild(roadsprite);
-
-
     exhaustsprite = await createExhaustSprite();
     exhaust.addChild(exhaustsprite);
 
     road.getComponent(ƒ.ComponentMaterial).activate(false);
     exhaust.getComponent(ƒ.ComponentMaterial).activate(false);
+
+  
 
     ƒ.AudioManager.default.listenTo(graph);
     sound = graph.getChildrenByName("Sound")[0];
@@ -303,7 +301,6 @@ namespace Script {
     if (gameOver) {
       return;
     }
-
     const obstacleTextures: ƒ.TextureImage[] = [
       new ƒ.TextureImage("Textures/Police.png"),
       new ƒ.TextureImage("Textures/Pothole.png"),
@@ -311,9 +308,10 @@ namespace Script {
       new ƒ.TextureImage("Textures/Car_Yellow.png"),
       new ƒ.TextureImage("Textures/Car_White.png")
     ];
-
+  
     const textureIndex: number = Math.floor(Math.random() * obstacleTextures.length);
     const texture: ƒ.TextureImage = obstacleTextures[textureIndex];
+  
 
     let scaling: ƒ.Vector3;
     let isPulsing: boolean;
@@ -437,7 +435,6 @@ namespace Script {
 
 
   function createPoliceSprite(texture: ƒ.TextureImage): ƒAid.NodeSprite {
-    ;
     let coat: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, texture);
     let animation: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation("Police", coat);
     animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(98));

@@ -371,7 +371,6 @@ var Script;
         return sprite;
     }
     function createPoliceSprite(texture) {
-        ;
         let coat = new ƒ.CoatTextured(undefined, texture);
         let animation = new ƒAid.SpriteSheetAnimation("Police", coat);
         animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(98));
