@@ -70,6 +70,7 @@ var Script;
             let textureImage = new ƒ.TextureImage();
             textureImage.image = texture.image;
             let material = new ƒ.Material("ObstacleMaterial", ƒ.ShaderLitTextured, new ƒ.CoatTextured(new ƒ.Color(1, 1, 1, 1), textureImage));
+            // let material = new ƒ.Material("ObstacleMaterial", ƒ.ShaderLit);   // used for debugging to see the actual mesh
             let cmpMaterial = new ƒ.ComponentMaterial(material);
             this.addComponent(cmpMaterial);
             // check if the obstacle is supposed to be pulsing to add Scriptcomponent
@@ -99,7 +100,7 @@ var Script;
         document.addEventListener("keydown", carGas);
         document.addEventListener("keydown", carMove);
         document.addEventListener("keyup", stopCarGas);
-        car.addEventListener(EVENT_COLLISION, handleCollision);
+        graph.addEventListener(EVENT_COLLISION, handleCollision);
         exhaust.activate(false);
         roadsprite = await createRoadSprite();
         road.addChild(roadsprite);
@@ -284,27 +285,27 @@ var Script;
         else if (textureIndex === 1) {
             // Pothole
             obstacleSpeedModifier = 0.6;
-            scaling = new ƒ.Vector3(0.7, 0.7, 1);
+            scaling = new ƒ.Vector3(0.4, 0.4, 1);
             isPulsing = false;
         }
         else if (textureIndex === 2) {
             // Truck
             obstacleSpeedModifier = 0.9;
             truckHornSound.play(true);
-            scaling = new ƒ.Vector3(0.9, 2, 1);
+            scaling = new ƒ.Vector3(0.7, 1.8, 1);
             isPulsing = true;
         }
         else if (textureIndex === 3) {
             // Car_Yellow
             obstacleSpeedModifier = 1;
-            scaling = new ƒ.Vector3(0.8, 1.2, 1);
+            scaling = new ƒ.Vector3(0.6, 1, 1);
             isPulsing = true;
         }
         else if (textureIndex === 4) {
             // Car_White
             obstacleSpeedModifier = 1.4;
             carHornSound.play(true);
-            scaling = new ƒ.Vector3(0.8, 1.2, 1);
+            scaling = new ƒ.Vector3(0.6, 1, 1);
             isPulsing = true;
         }
         const obstacle = new Obstacle(texture, scaling, obstacleSpeedModifier, isPulsing);
@@ -342,16 +343,17 @@ var Script;
     }
     async function createRoadSprite() {
         let imgSpriteSheet = new ƒ.TextureImage();
-        await imgSpriteSheet.load("Textures/Road_bearbeitet.png");
+        await imgSpriteSheet.load("Textures/Road_bearbeitet_neu.png");
         let coat = new ƒ.CoatTextured(undefined, imgSpriteSheet);
         let animation = new ƒAid.SpriteSheetAnimation("Highway", coat);
-        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 280, 446), 2, 70, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(280));
+        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 280, 892), 2, 70, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(280));
         let sprite = new ƒAid.NodeSprite("Sprite");
         sprite.setAnimation(animation);
         sprite.setFrameDirection(-1);
         sprite.framerate = roadAnimationFramerate;
         let cmpTransfrom = new ƒ.ComponentTransform();
         sprite.addComponent(cmpTransfrom);
+        sprite.mtxLocal.translateY(-2);
         return sprite;
     }
     async function createExhaustSprite() {
@@ -372,7 +374,7 @@ var Script;
         ;
         let coat = new ƒ.CoatTextured(undefined, texture);
         let animation = new ƒAid.SpriteSheetAnimation("Police", coat);
-        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(98));
+        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(98));
         let sprite = new ƒAid.NodeSprite("PoliceSprite");
         sprite.setAnimation(animation);
         sprite.setFrameDirection(-1);
@@ -388,9 +390,8 @@ var Script;
     ƒ.Project.registerScriptNamespace(Script);
     class Pulsing extends ƒ.ComponentScript {
         static iSubclass = ƒ.Component.registerSubclass(Pulsing);
-        message = "CustomComponentScript added to ";
-        originalScale = new ƒ.Vector2(0.8, 0.8);
-        targetScale = new ƒ.Vector2(0.6, 0.6);
+        originalScale = new ƒ.Vector2(1, 1);
+        targetScale = new ƒ.Vector2(0.9, 0.9);
         pulseDuration = 1; // Duration of one pulsation cycle in seconds
         timer = 0; // Timer to track the pulsation duration
         constructor() {
@@ -404,7 +405,6 @@ var Script;
         hndEvent = (_event) => {
             switch (_event.type) {
                 case "componentAdd" /* COMPONENT_ADD */:
-                    ƒ.Debug.log(this.message, this.node);
                     this.startPulsation();
                     break;
                 case "componentRemove" /* COMPONENT_REMOVE */:

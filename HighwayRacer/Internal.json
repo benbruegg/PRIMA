@@ -297,6 +297,24 @@
                     }
                   }
                 }
+              ],
+              "Pulsing": [
+                {
+                  "Script.Pulsing": {
+                    "active": true,
+                    "message": "CustomComponentScript added to ",
+                    "originalScale": {
+                      "x": 1,
+                      "y": 1
+                    },
+                    "targetScale": {
+                      "x": 0.8999999761581421,
+                      "y": 0.8999999761581421
+                    },
+                    "pulseDuration": 1,
+                    "timer": 0
+                  }
+                }
               ]
             },
             "children": [
@@ -413,7 +431,7 @@
                     "pivot": {
                       "translation": "[0, 0, 0]",
                       "rotation": "[0, 0, 0]",
-                      "scaling": "[20, 20, 0]"
+                      "scaling": "[23, 23, 0]"
                     },
                     "Component": {
                       "active": true

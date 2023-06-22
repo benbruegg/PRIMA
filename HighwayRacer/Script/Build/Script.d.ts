@@ -19,7 +19,6 @@ declare namespace Script {
     import ƒ = FudgeCore;
     class Pulsing extends ƒ.ComponentScript {
         static readonly iSubclass: number;
-        message: string;
         originalScale: ƒ.Vector2;
         targetScale: ƒ.Vector2;
         pulseDuration: number;

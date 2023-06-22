@@ -4,9 +4,8 @@ namespace Script {
 
   export class Pulsing extends ƒ.ComponentScript {
     public static readonly iSubclass: number = ƒ.Component.registerSubclass(Pulsing);
-    public message: string = "CustomComponentScript added to ";
-    public originalScale: ƒ.Vector2 = new ƒ.Vector2(0.8, 0.8);
-    public targetScale: ƒ.Vector2 = new ƒ.Vector2(0.6, 0.6);
+    public originalScale: ƒ.Vector2 = new ƒ.Vector2(1, 1);
+    public targetScale: ƒ.Vector2 = new ƒ.Vector2(0.9, 0.9);
     public pulseDuration: number = 1; // Duration of one pulsation cycle in seconds
     public timer: number = 0; // Timer to track the pulsation duration
 
@@ -24,7 +23,6 @@ namespace Script {
     public hndEvent = (_event: Event): void => {
       switch (_event.type) {
         case ƒ.EVENT.COMPONENT_ADD:
-          ƒ.Debug.log(this.message, this.node);
           this.startPulsation();
           break;
         case ƒ.EVENT.COMPONENT_REMOVE:
