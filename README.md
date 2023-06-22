@@ -1,4 +1,4 @@
-# Prima_SS22
+# PRIMA
 
 
 * Title: Highway Racer
@@ -19,9 +19,7 @@
 | Nr | Criterion           | Explanation                                                                                                                                     |   |
 | -- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------|---|
 |  1 | Units and Positions | That setup was used because it comes in handy to place the users car on the 0 position so the distance to the right and left end of the highway are the same, also by using 1 as a step from lane to lane that made placing obstacles on the exact lanes easier.                                                            
-|  2 | Hierarchy           | Graphs are set up like this: 
-
-				      Game (Contains all the objects in the game)
+|  2 | Hierarchy           | Graphs are set up like this: Game (Contains all the objects in the game)
  					-Car 
   				          -Exhaust
  					-Obstacles
