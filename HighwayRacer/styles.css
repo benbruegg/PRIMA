@@ -1,5 +1,6 @@
 html,
 body {
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   padding: 0px;
   margin: 0px;
   width: 100%;
@@ -9,6 +10,10 @@ body {
 
 dialog {
   text-align: center;
+  background-image: url("Images/Start_Image.jpg");
+  width: 300px;
+  height: 200px;
+  background-size: 342px;
 }
 
 canvas.fullscreen {
@@ -29,12 +34,13 @@ canvas.fullscreen {
 }
 
 #gameOverScreen {
-  background: white;
+  background-image: url("Images/Car_Crash.jpg");
+  background-size: 500px;
   color: black;
   display: none;
   justify-content: center;
-  height: 200px;
-  width: 200px;
+  height: 400px;
+  width: 470px;
   top: 50%;
   left: 50%;
   position: absolute;
@@ -44,6 +50,23 @@ canvas.fullscreen {
   border: solid black;
   border-width: 5px;
   padding: 10px;
+}
+
+#gameOverScreen h1 {
+  font-size: 48px;
+  margin: 6px;
+}
+
+#gameOverScreen p {
+  font-size: 26px;
+  margin: 0px;
+}
+
+#gameOverScreen button {
+  width: 100px;
+  height: 45px;
+  font-size: 22px;
+  transform: translate(0%, 100%);
 }
 
 :disabled {
@@ -62,6 +85,7 @@ canvas.fullscreen {
   border-width: 5px;
   padding: 3px;
 }
+
 #highscore {
   position: absolute;
   left: 10%;
@@ -71,6 +95,3 @@ canvas.fullscreen {
   border-width: 5px;
   padding: 3px;
 }
-
-
-

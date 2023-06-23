@@ -238,7 +238,7 @@
                     "idResource": "Audio|2023-06-21T15:55:10.437Z|33630",
                     "playing": false,
                     "loop": false,
-                    "volume": 1
+                    "volume": 0.5999999046325684
                   }
                 }
               ]
@@ -302,7 +302,6 @@
                 {
                   "Script.Pulsing": {
                     "active": true,
-                    "message": "CustomComponentScript added to ",
                     "originalScale": {
                       "x": 1,
                       "y": 1

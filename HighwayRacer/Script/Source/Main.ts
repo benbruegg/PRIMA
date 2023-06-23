@@ -392,8 +392,7 @@ namespace Script {
     // Wait for the interval and then create a random obstacle
     obstacleCreationTimeout = setTimeout(createObstacle, interval * 1000);
   }
-
-
+  
   async function createRoadSprite(): Promise<ƒAid.NodeSprite> {
     let imgSpriteSheet: ƒ.TextureImage = new ƒ.TextureImage();
     await imgSpriteSheet.load("Textures/Road_bearbeitet_neu.png");
