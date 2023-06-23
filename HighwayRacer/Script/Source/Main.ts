@@ -302,7 +302,7 @@ namespace Script {
       return;
     }
     const obstacleTextures: ƒ.TextureImage[] = [
-      new ƒ.TextureImage("Textures/Police.png"),
+      new ƒ.TextureImage("Textures/police.png"),
       new ƒ.TextureImage("Textures/Pothole.png"),
       new ƒ.TextureImage("Textures/Truck.png"),
       new ƒ.TextureImage("Textures/Car_Yellow.png"),
