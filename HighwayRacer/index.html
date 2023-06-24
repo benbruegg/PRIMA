@@ -102,28 +102,39 @@
     <div id="vui">
         <div id="runtimeStats">
             <p>
-                 <b>Score</b> <input key="score" disabled="" />
+                 Score: <input key="score" disabled="" />
             </p> 
             <p>
-                <b>Speed</b> <input key="carSpeed" disabled="" /> km/h
+                <input key="carSpeed" disabled=""/>km/h<br>
+                <input type="range" key="carSpeedRange" min="1" max="360">
             </p>
             <p>
-                <b>Distance</b> <input key="distanceTraveled" disabled="" /> km
+                km: <input key="distanceTraveled" disabled="" />
             </p>
         </div>
         <div id="gameOverScreen">
         
             <h1>Game Over!</h1>
-            <p>Score:<br> <input key="finalScore" disabled="" />
+            <p>Score:<br /> <input key="finalScore" disabled="" />
             </p>
-                <button onclick="restartGame()"><b>Restart</b></button>
+                <button onclick="restartGame()">
+<b>Restart</b>
+</button>
 
         </div>
         <div id="highscore">
-            
-        </div>
+            <h2>Highscores</h2>
+            <ol id="highscoreList"></ol>
+            <form id="highscoreForm">
+              <label for="nameInput">Enter your name:</label>
+              <input type="text" id="nameInput" required>
+              <button type="submit">Submit</button>
+            </form>
+          </div>
+          
 
     </div>
+
 
 
 

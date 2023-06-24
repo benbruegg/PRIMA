@@ -4,6 +4,7 @@ declare namespace Script {
         score: number;
         finalScore: number;
         carSpeed: number;
+        carSpeedRange: number;
         distanceTraveled: number;
         constructor();
         protected reduceMutator(_mutator: ƒ.Mutator): void;

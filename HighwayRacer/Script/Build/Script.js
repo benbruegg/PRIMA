@@ -7,13 +7,16 @@ var Script;
         score = 0;
         finalScore = 0;
         carSpeed = 0;
+        carSpeedRange = 0;
         distanceTraveled = 0;
         constructor() {
             super();
             let domHud = document.querySelector("div#vui");
             console.log(new ƒui.Controller(this, domHud));
         }
-        reduceMutator(_mutator) { }
+        reduceMutator(_mutator) {
+            /* */
+        }
     }
     Script.GameState = GameState;
 })(Script || (Script = {}));
@@ -83,6 +86,8 @@ var Script;
     async function start(_event) {
         let response = await fetch("config.json");
         let config = await response.json();
+        let runtimeStats = document.querySelector("#runtimeStats");
+        runtimeStats.style.display = "block";
         gameSpeed = config.gameSpeed;
         obstacleSpeed = config.obstacleSpeed;
         viewport = _event.detail;
@@ -140,13 +145,14 @@ var Script;
             checkCollision(car, obstacle);
         }
         //set gamespeed increase per second
-        gameSpeed += 0.000001 * ƒ.Loop.timeFrameStartReal / 1000;
+        gameSpeed += 0.000001 * ƒ.Loop.timeFrameStartGame / 1000;
         if (gameSpeed > 0.1) {
             gameSpeed = 0.1;
         }
         // Update the speed of the obstacles 
         obstacleSpeed.y -= (gameSpeed / 1000);
         gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
+        gameState.carSpeedRange = gameState.carSpeed;
         const timeElapsedinSeconds = ƒ.Loop.timeFrameReal / 1000;
         const distance = (gameState.carSpeed * timeElapsedinSeconds) / 3600; // Distance in kilometers s = v * t
         gameState.distanceTraveled += distance;
@@ -241,9 +247,12 @@ var Script;
         ƒ.Loop.stop();
         clearTimeout(obstacleCreationTimeout);
         engineSound.play(false);
+        policeSound.play(false);
         gameOver = true;
         let gameOverScreen = document.querySelector("#gameOverScreen");
         let vui = document.querySelector("#vui");
+        let runtimeStats = document.querySelector("#runtimeStats");
+        runtimeStats.style.display = "none";
         vui.style.cursor = "auto";
         gameOverScreen.style.display = "block";
         console.log("Game Over");

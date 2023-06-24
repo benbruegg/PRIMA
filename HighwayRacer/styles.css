@@ -66,25 +66,69 @@ canvas.fullscreen {
   width: 100px;
   height: 45px;
   font-size: 22px;
-  transform: translate(0%, 100%);
+  display: block;
+  margin: 47px auto;
 }
+
+#gameOverScreen input {
+  text-align: center;
+  border: none;
+  font-size: 26px;
+}
+
 
 :disabled {
   background: white;
   color: black;
 }
 
+
+
 #runtimeStats {
   position: absolute;
-  top: 50%;
-  width: auto;
-  background: white;
-  color: black;
-  right: 10%;
-  border: solid black;
-  border-width: 5px;
-  padding: 3px;
+  background-image: url("Images/carpanel.png");
+  background-repeat: no-repeat;
+  background-size: 30vw;
+  display: block;
+  width: 30vw;
+  bottom: 8vw;
+  height: 15vw;
+  color: #83939D;
+  font-size: 1vw;
 }
+
+#runtimeStats :disabled {
+  background: transparent;
+  color: #83939D;
+  border: none;
+  font-size: 1vw;
+}
+
+#runtimeStats input {
+  width: 1.9vw;
+}
+
+
+#runtimeStats p:nth-child(1) {
+  position: absolute;
+  left: 22%;
+  top: 19%;
+}
+
+#runtimeStats p:nth-child(2) {
+  position: absolute;
+  top: 8%;
+  left: 43.5%;
+  text-align: center;
+}
+
+#runtimeStats p:nth-child(3) {
+  position: absolute;
+  top: 19%;
+  right: 17%;
+}
+
+
 
 #highscore {
   position: absolute;
@@ -95,3 +139,50 @@ canvas.fullscreen {
   border-width: 5px;
   padding: 3px;
 }
+
+
+input[type=range] {
+  -webkit-appearance: none;
+  height: 2px;
+}
+
+input[type=range]::-moz-range-track {
+  width: 3vw;
+  height: 0.3vw;
+  background: white;
+  border: none;
+}
+
+
+input[type=range]::-moz-range-progress {
+  color: #5CABF0;
+}
+
+input[type=range]::-moz-range-thumb {
+  border: none;
+  height: 1.5vh;
+  width: 2px;
+  background: #5CABF0;
+}
+
+
+input[type=range]:focus::-moz-range-track {
+  background: white;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 3vw;
+  height: 0.3vw;
+  background: white;
+  border: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border: none;
+  height: 1.5vh;
+  width: 2px;
+  background: #5CABF0;
+  margin-top: -0.4vh;
+}
+

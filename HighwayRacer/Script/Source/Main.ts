@@ -39,6 +39,7 @@ namespace Script {
   let carHornSound: ƒ.ComponentAudio;
   let policeSound: ƒ.ComponentAudio;
 
+
   let config: Config;
 
 
@@ -79,6 +80,8 @@ namespace Script {
   async function start(_event: CustomEvent): Promise<void> {
     let response: Response = await fetch("config.json");
     let config: Config = await response.json();
+    let runtimeStats: HTMLDivElement = document.querySelector("#runtimeStats");
+    runtimeStats.style.display = "block";
 
     gameSpeed = config.gameSpeed;
     obstacleSpeed = config.obstacleSpeed;
@@ -153,7 +156,7 @@ namespace Script {
     }
 
     //set gamespeed increase per second
-    gameSpeed += 0.000001 * ƒ.Loop.timeFrameStartReal / 1000;
+    gameSpeed += 0.000001 * ƒ.Loop.timeFrameStartGame / 1000;
     if (gameSpeed > 0.1) {
       gameSpeed = 0.1;
     }
@@ -162,6 +165,7 @@ namespace Script {
     obstacleSpeed.y -= (gameSpeed / 1000);
 
     gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
+    gameState.carSpeedRange = gameState.carSpeed;
 
     const timeElapsedinSeconds: number = ƒ.Loop.timeFrameReal / 1000;
     const distance: number = (gameState.carSpeed * timeElapsedinSeconds) / 3600; // Distance in kilometers s = v * t
@@ -269,6 +273,7 @@ namespace Script {
       gameState.score++;
       gameState.finalScore = gameState.score;
 
+
     }
 
   }
@@ -277,9 +282,12 @@ namespace Script {
     ƒ.Loop.stop();
     clearTimeout(obstacleCreationTimeout);
     engineSound.play(false);
+    policeSound.play(false);
     gameOver = true;
     let gameOverScreen: HTMLDivElement = document.querySelector("#gameOverScreen");
     let vui: HTMLDivElement = document.querySelector("#vui");
+    let runtimeStats: HTMLDivElement = document.querySelector("#runtimeStats");
+    runtimeStats.style.display = "none";
     vui.style.cursor = "auto";
     gameOverScreen.style.display = "block";
     console.log("Game Over");
