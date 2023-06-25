@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
     <title>HighwayRacer</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="styles.css" />
 
     <!--Editor settings of this project-->
-    <meta type="settings" autoview="Graph|2022-07-12T09:10:18.836Z|32621" project="{'name':'HighwayRacer','includeAutoViewScript':true,'graphAutoView':'Graph|2022-07-12T09:10:18.836Z|32621'}" panels="[{'type':'PanelProject','state':{}},{'type':'PanelGraph','state':{'graph':'Graph|2022-07-12T09:10:18.836Z|32621'}},{'type':'PanelHelp','state':{}}]" />
+    <meta type="settings" autoview="Graph|2022-07-12T09:10:18.836Z|32621"
+        project="{'name':'HighwayRacer','includeAutoViewScript':true,'graphAutoView':'Graph|2022-07-12T09:10:18.836Z|32621'}"
+        panels="[{'type':'PanelProject','state':{}},{'type':'PanelGraph','state':{'graph':'Graph|2022-07-12T09:10:18.836Z|32621'}},{'type':'PanelHelp','state':{}}]" />
 
-    <!--Activate the following line to include the FUDGE-version of Oimo-Physics. You may want to download a local copy to work offline and be independent from future changes!-->
-    <script type="text/javascript" src="https://benbruegg.github.io/PRIMA/FUDGE/Physics/OimoPhysics.js"></script>
 
     <!--Load FUDGE. You may want to download local copies to work offline and be independent from future changes! Developers working on FUDGE itself may want to create symlinks-->
     <script type="text/javascript" src="https://benbruegg.github.io/PRIMA/FUDGE/Core/Build/FudgeCore.js"></script>
     <script type="text/javascript" src="https://benbruegg.github.io/PRIMA/FUDGE/Aid/Build/FudgeAid.js"></script>
-    <script type="text/javascript" src="https://benbruegg.github.io/PRIMA/FUDGE/UserInterface/Build/FudgeUserInterface.js"></script>
+    <script type="text/javascript"
+        src="https://benbruegg.github.io/PRIMA/FUDGE/UserInterface/Build/FudgeUserInterface.js"></script>
 
-    <!--Link internal resources. The editor only loads the first, but at runtime, multiple files can contribute--> 
+    <!--Link internal resources. The editor only loads the first, but at runtime, multiple files can contribute-->
     <link type="resources" src="Internal.json" />
 
     <!--Load custom scripts-->
@@ -63,22 +65,7 @@
                 viewport.initialize("InteractiveViewport", graph, cmpCamera, canvas);
                 FudgeCore.Debug.log("Viewport:", viewport);
 
-                /*
-                // hide the cursor when interacting, also suppressing right-click menu
-                canvas.addEventListener("mousedown", canvas.requestPointerLock);
-                canvas.addEventListener("mouseup", function () { document.exitPointerLock(); });
-                // make the camera interactive (complex method in FudgeAid)
-                FudgeAid.Viewport.expandCameraToInteractiveOrbit(viewport);
-                // setup audio
-                let cmpListener = new ƒ.ComponentAudioListener();
-                cmpCamera.node.addComponent(cmpListener);
-                FudgeCore.AudioManager.default.listenWith(cmpListener);
-                FudgeCore.AudioManager.default.listenTo(graph);
-                FudgeCore.Debug.log("Audio:", FudgeCore.AudioManager.default);
-                // draw viewport once for immediate feedback
-                viewport.draw();
 
-                */
                 canvas.dispatchEvent(new CustomEvent("interactiveViewportStarted", { bubbles: true, detail: viewport }));
             }
         })(document.head.querySelector("meta[autoView]").getAttribute("autoView"));
@@ -102,36 +89,36 @@
     <div id="vui">
         <div id="runtimeStats">
             <p>
-                 Score: <input key="score" disabled="" />
-            </p> 
+                Score: <input key="score" disabled="" />
+            </p>
             <p>
-                <input key="carSpeed" disabled=""/>km/h<br>
-                <input type="range" key="carSpeedRange" min="1" max="360">
+                <input key="carSpeed" disabled="" />km/h<br />
+                <input type="range" key="carSpeedRange" min="1" max="360" />
             </p>
             <p>
                 km: <input key="distanceTraveled" disabled="" />
             </p>
         </div>
         <div id="gameOverScreen">
-        
+
             <h1>Game Over!</h1>
             <p>Score:<br /> <input key="finalScore" disabled="" />
             </p>
-                <button onclick="restartGame()">
-<b>Restart</b>
-</button>
+            <button onclick="restartGame()">
+                <b>Restart</b>
+            </button>
 
         </div>
-        <div id="highscore">
-            <h2>Highscores</h2>
-            <ol id="highscoreList"></ol>
-            <form id="highscoreForm">
-              <label for="nameInput">Enter your name:</label>
-              <input type="text" id="nameInput" required>
-              <button type="submit">Submit</button>
-            </form>
-          </div>
-          
+        <div id="tutorial">
+            <h1>How to Play:</h1>
+
+            <p>Move the car with WASD or Arrow Keys</p>
+            <img src="Images\controls.png" />
+            <p>Try to avoid colliding with obstacles coming your way</p>
+            <h2>How many obstacles can you overcome?</h2>
+            <span id="maniac">or realize you are drunk driving the wrong way on a freaking highway - you maniac</span>
+        </div>
+
 
     </div>
 
@@ -202,5 +189,7 @@
 
 
 
+
 </body>
+
 </html>

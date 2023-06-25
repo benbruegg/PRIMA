@@ -11,10 +11,6 @@ declare namespace Script {
     }
 }
 declare namespace Script {
-    class Highscore {
-    }
-}
-declare namespace Script {
 }
 declare namespace Script {
     import ƒ = FudgeCore;

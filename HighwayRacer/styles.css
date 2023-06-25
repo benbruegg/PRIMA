@@ -32,6 +32,50 @@ canvas.fullscreen {
   color: black;
   cursor: none;
 }
+#runtimeStats {
+  position: absolute;
+  background-image: url("Images/carpanel.png");
+  background-repeat: no-repeat;
+  background-size: 30vw;
+  display: none;
+  width: 30vw;
+  bottom: 8vw;
+  height: 15vw;
+  color: #83939D;
+  font-size: 1vw;
+}
+
+#runtimeStats :disabled {
+  background: transparent;
+  color: #83939D;
+  border: none;
+  font-size: 1vw;
+}
+
+#runtimeStats input {
+  width: 2vw;
+}
+
+
+#runtimeStats p:nth-child(1) {
+  position: absolute;
+  left: 22%;
+  top: 19%;
+}
+
+#runtimeStats p:nth-child(2) {
+  position: absolute;
+  top: 8%;
+  left: 43.5%;
+  text-align: center;
+}
+
+#runtimeStats p:nth-child(3) {
+  position: absolute;
+  top: 19%;
+  right: 17%;
+}
+
 
 #gameOverScreen {
   background-image: url("Images/Car_Crash.jpg");
@@ -77,67 +121,37 @@ canvas.fullscreen {
 }
 
 
+#tutorial {
+  position: absolute;
+  display: none;
+  right: 2vw;
+  width: 29vw;
+  text-align: center;
+  height: 100vw;
+}
+#tutorial img {
+  width: 20vw;
+}
+
+#tutorial h1 {
+  font-size: 3vw;
+}
+#tutorial p {
+  font-size: 1.3vw;
+}
+
+#tutorial h2 {
+  font-size: 2vw;
+  margin-bottom: 0px;
+}
+
+#maniac {
+  font-size: 0.5vw;
+}
+
 :disabled {
   background: white;
   color: black;
-}
-
-
-
-#runtimeStats {
-  position: absolute;
-  background-image: url("Images/carpanel.png");
-  background-repeat: no-repeat;
-  background-size: 30vw;
-  display: block;
-  width: 30vw;
-  bottom: 8vw;
-  height: 15vw;
-  color: #83939D;
-  font-size: 1vw;
-}
-
-#runtimeStats :disabled {
-  background: transparent;
-  color: #83939D;
-  border: none;
-  font-size: 1vw;
-}
-
-#runtimeStats input {
-  width: 1.9vw;
-}
-
-
-#runtimeStats p:nth-child(1) {
-  position: absolute;
-  left: 22%;
-  top: 19%;
-}
-
-#runtimeStats p:nth-child(2) {
-  position: absolute;
-  top: 8%;
-  left: 43.5%;
-  text-align: center;
-}
-
-#runtimeStats p:nth-child(3) {
-  position: absolute;
-  top: 19%;
-  right: 17%;
-}
-
-
-
-#highscore {
-  position: absolute;
-  left: 10%;
-  background: white;
-  color: black;
-  border: solid black;
-  border-width: 5px;
-  padding: 3px;
 }
 
 

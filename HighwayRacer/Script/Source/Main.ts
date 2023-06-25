@@ -7,7 +7,7 @@ namespace Script {
 
 
   interface Config {
-    gameSpeed: number;
+    gameSpeedModifier: number;
     obstacleSpeed: ƒ.Vector3;
   }
 
@@ -25,7 +25,8 @@ namespace Script {
   let exhaustsprite: ƒAid.NodeSprite;
 
   let gameState: GameState;
-  let gameSpeed: number;
+  let gameSpeed: number = 0.01;
+  let gameSpeedModifier: number;
   let roadAnimationFramerate: number = 4;
   let gameOver: boolean = false;
   let obstacleCreated = false;
@@ -36,8 +37,9 @@ namespace Script {
   let carPassingSound: ƒ.ComponentAudio;
   let truckHornSound: ƒ.ComponentAudio;
   let driftSound: ƒ.ComponentAudio;
-  let carHornSound: ƒ.ComponentAudio;
+  let carHornSound: ƒ.ComponentAudio
   let policeSound: ƒ.ComponentAudio;
+  let realTime = ƒ.LOOP_MODE.TIME_REAL;
 
 
   let config: Config;
@@ -46,6 +48,7 @@ namespace Script {
   // declare Game Over Event
   const EVENT_GAME_OVER: string = "gameOver";
   const EVENT_COLLISION = "collisionEvent";
+
   //Class to define obstacles as nodes
   class Obstacle extends ƒ.Node {
     public passed: boolean = false;
@@ -78,12 +81,15 @@ namespace Script {
   }
 
   async function start(_event: CustomEvent): Promise<void> {
+
     let response: Response = await fetch("config.json");
     let config: Config = await response.json();
     let runtimeStats: HTMLDivElement = document.querySelector("#runtimeStats");
+    let tutorial: HTMLDivElement = document.querySelector("#tutorial");
     runtimeStats.style.display = "block";
+    tutorial.style.display = "block";
 
-    gameSpeed = config.gameSpeed;
+    gameSpeedModifier = config.gameSpeedModifier;
     obstacleSpeed = config.obstacleSpeed;
 
     viewport = _event.detail;
@@ -130,7 +136,7 @@ namespace Script {
     createObstacle();
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
-    ƒ.Loop.start();  // start the game loop to continuously draw the viewport, update the audiosystem and drive the physics i/a
+    ƒ.Loop.start(realTime, 60);  // start the game loop to continuously draw the viewport, update the audiosystem and drive the physics i/a
 
   }
 
@@ -138,7 +144,6 @@ namespace Script {
   function update(_event: Event): void {
     if (gameOver)
       return;
-    // ƒ.Physics.simulate(); 
 
     // Move the obstacles and remove them after going out of camera view
     for (const obstacle of obstacles.getChildren()) {
@@ -155,24 +160,43 @@ namespace Script {
       checkCollision(car, obstacle);
     }
 
-    //set gamespeed increase per second
-    gameSpeed += 0.000001 * ƒ.Loop.timeFrameStartGame / 1000;
-    if (gameSpeed > 0.1) {
-      gameSpeed = 0.1;
-    }
 
+
+    let timeElapsedInSeconds: number = 0;
+    let timeSinceLastFrame: number = 0;
+    let distanceInLastFrame: number = 0;
+    const maxGameSpeed = 0.1; // Maximum game speed (corresponding to 360 km/h)
+    
+    timeElapsedInSeconds = ƒ.Loop.timeFrameStartGame / 1000;
+    timeSinceLastFrame = ƒ.Loop.timeFrameGame / 1000; // seconds passed since last loop frame
+    distanceInLastFrame = (gameState.carSpeed * timeSinceLastFrame) / 3600; // Distance in kilometers s = v * t
+    
+    // Accumulate the distance traveled
+    gameState.distanceTraveled += distanceInLastFrame;
+    
+
+
+    const logarithmicGameSpeed = Math.log(gameSpeedModifier * timeElapsedInSeconds + 1) * gameSpeedModifier;
+
+    // Set the gameSpeed while limiting it to the maximum value
+    gameSpeed = Math.min(logarithmicGameSpeed, maxGameSpeed);
+
+
+    // set gamespeed increase per second
+    // gameSpeed += gameSpeedModifier * timeElapsedInSeconds;
+    
+    // limit the gameSpeed at 0.1 (360km/h carSpeed)
+   /* if (gameSpeed > 0.1) {
+      gameSpeed = 0.1;
+    } */
+    
     // Update the speed of the obstacles 
     obstacleSpeed.y -= (gameSpeed / 1000);
-
+    
     gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
     gameState.carSpeedRange = gameState.carSpeed;
-
-    const timeElapsedinSeconds: number = ƒ.Loop.timeFrameReal / 1000;
-    const distance: number = (gameState.carSpeed * timeElapsedinSeconds) / 3600; // Distance in kilometers s = v * t
-
-    gameState.distanceTraveled += distance;
-
-    gameState.distanceTraveled = Number(gameState.distanceTraveled.toFixed(3));
+    
+  
 
     // create more obstacles after 1.5km traveled
     if (gameState.distanceTraveled > 1.5 && !obstacleCreated) {
@@ -287,6 +311,8 @@ namespace Script {
     let gameOverScreen: HTMLDivElement = document.querySelector("#gameOverScreen");
     let vui: HTMLDivElement = document.querySelector("#vui");
     let runtimeStats: HTMLDivElement = document.querySelector("#runtimeStats");
+    let tutorial: HTMLDivElement = document.querySelector("#tutorial");
+    tutorial.style.display = "none";
     runtimeStats.style.display = "none";
     vui.style.cursor = "auto";
     gameOverScreen.style.display = "block";
@@ -394,8 +420,8 @@ namespace Script {
 
 
   function scheduleNextObstacleCreation(): void {
-    const minInterval: number = 6 - (gameSpeed * 50); // Minimum interval in seconds
-    const maxInterval: number = 10 - (gameSpeed) * 50; // Maximum interval in seconds
+    const minInterval: number = 6 - (gameSpeed * 80); // Minimum interval in seconds
+    const maxInterval: number = 10 - (gameSpeed) * 80; // Maximum interval in seconds
     const interval: number = getRandomNumber(minInterval, maxInterval); // Random interval in seconds
     // Wait for the interval and then create a random obstacle
     obstacleCreationTimeout = setTimeout(createObstacle, interval * 1000);
