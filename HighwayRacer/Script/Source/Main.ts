@@ -180,7 +180,6 @@ namespace Script {
     gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
     gameState.carSpeedRange = gameState.carSpeed;
     
-
     // create more obstacles after 1.5km traveled
     if (gameState.distanceTraveled > 1.5 && !obstacleCreated) {
       createObstacle();
@@ -282,7 +281,6 @@ namespace Script {
 
 
     }
-
   }
 
   // Game Stop 
@@ -317,7 +315,6 @@ namespace Script {
     return Math.random() * (max - min) + min;
   }
 
-
   function createObstacle(): void {
     if (gameOver) {
       return;
@@ -345,12 +342,12 @@ namespace Script {
       // Police
       obstacleSpeedModifier = 1;
       policeSound.play(true);
-      scaling = new ƒ.Vector3(0.8, 0.8, 1);
+      scaling = new ƒ.Vector3(0.45, 1, 1);
       isPulsing = true;
     } else if (textureIndex === 1) {
       // Pothole
       obstacleSpeedModifier = 0.6;
-      scaling = new ƒ.Vector3(0.4, 0.4, 0.9);
+      scaling = new ƒ.Vector3(0.4, 0.4, 0.01);
       isPulsing = false;
     } else if (textureIndex === 2) {
       // Truck
@@ -378,7 +375,9 @@ namespace Script {
       obstacle.addChild(policeSprite);
       obstacle.getComponent(ƒ.ComponentMaterial).activate(false); 
     }
-
+    if (textureIndex === 1) {
+      obstacle.mtxWorld.translateZ(-0.01);
+    }
 
     do {
       const newXValue = getRandomXValue();
@@ -404,18 +403,14 @@ namespace Script {
     scheduleNextObstacleCreation();
   }
 
-
-
   function scheduleNextObstacleCreation(): void {
     const minInterval: number = creationInterval.x - (gameSpeed * 80); // Minimum interval in seconds
     const maxInterval: number = creationInterval.y - (gameSpeed) * 80; // Maximum interval in seconds
     const interval: number = getRandomNumber(minInterval, maxInterval); // Random interval in seconds
     // Wait for the interval and then create a random obstacle
     obstacleCreationTimeout = setTimeout(createObstacle, interval * 1000);
-    console.log(interval);
   }
   
-
   // generate Road Sprite Animation 
   async function createRoadSprite(): Promise<ƒAid.NodeSprite> {
     let imgSpriteSheet: ƒ.TextureImage = new ƒ.TextureImage();
@@ -434,9 +429,6 @@ namespace Script {
 
     return sprite;
   }
-
-
-
 
 // generale Exhaust Sprite Animation
   async function createExhaustSprite(): Promise<ƒAid.NodeSprite> {
@@ -460,7 +452,7 @@ namespace Script {
   function createPoliceSprite(texture: ƒ.TextureImage): ƒAid.NodeSprite {
     let coat: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, texture);
     let animation: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation("Police", coat);
-    animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(98));
+    animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(98));
     let sprite: ƒAid.NodeSprite = new ƒAid.NodeSprite("PoliceSprite");
     sprite.setAnimation(animation);
     sprite.setFrameDirection(-1);

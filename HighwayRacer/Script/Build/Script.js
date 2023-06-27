@@ -289,13 +289,13 @@ var Script;
             // Police
             obstacleSpeedModifier = 1;
             policeSound.play(true);
-            scaling = new ƒ.Vector3(0.8, 0.8, 1);
+            scaling = new ƒ.Vector3(0.45, 1, 1);
             isPulsing = true;
         }
         else if (textureIndex === 1) {
             // Pothole
             obstacleSpeedModifier = 0.6;
-            scaling = new ƒ.Vector3(0.4, 0.4, 0.9);
+            scaling = new ƒ.Vector3(0.4, 0.4, 0.01);
             isPulsing = false;
         }
         else if (textureIndex === 2) {
@@ -324,6 +324,9 @@ var Script;
             obstacle.addChild(policeSprite);
             obstacle.getComponent(ƒ.ComponentMaterial).activate(false);
         }
+        if (textureIndex === 1) {
+            obstacle.mtxWorld.translateZ(-0.01);
+        }
         do {
             const newXValue = getRandomXValue();
             obstaclePosition = new ƒ.Vector3(newXValue, getRandomNumber(7, 7), 0);
@@ -348,7 +351,6 @@ var Script;
         const interval = getRandomNumber(minInterval, maxInterval); // Random interval in seconds
         // Wait for the interval and then create a random obstacle
         obstacleCreationTimeout = setTimeout(createObstacle, interval * 1000);
-        console.log(interval);
     }
     // generate Road Sprite Animation 
     async function createRoadSprite() {
@@ -385,7 +387,7 @@ var Script;
     function createPoliceSprite(texture) {
         let coat = new ƒ.CoatTextured(undefined, texture);
         let animation = new ƒAid.SpriteSheetAnimation("Police", coat);
-        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(98));
+        animation.generateByGrid(ƒ.Rectangle.GET(0, 0, 98, 214), 3, 214, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(98));
         let sprite = new ƒAid.NodeSprite("PoliceSprite");
         sprite.setAnimation(animation);
         sprite.setFrameDirection(-1);
