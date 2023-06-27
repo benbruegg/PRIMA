@@ -9,6 +9,7 @@ namespace Script {
   interface Config {
     gameSpeedModifier: number;
     obstacleSpeed: ƒ.Vector3;
+    creationInterval: ƒ.Vector2;
   }
 
   let viewport: ƒ.Viewport;
@@ -31,6 +32,7 @@ namespace Script {
   let gameOver: boolean = false;
   let obstacleCreated = false;
   let obstacleCreationTimeout: number;
+  let creationInterval: ƒ.Vector2;
 
   let engineSound: ƒ.ComponentAudio;
   let crashSound: ƒ.ComponentAudio;
@@ -91,6 +93,7 @@ namespace Script {
 
     gameSpeedModifier = config.gameSpeedModifier;
     obstacleSpeed = config.obstacleSpeed;
+    creationInterval = config.creationInterval;
 
     viewport = _event.detail;
     viewport.camera.attachToNode(road);
@@ -98,11 +101,11 @@ namespace Script {
     viewport.camera.mtxPivot.rotateY(180, true);
 
     gameState = new GameState();
+    
     let graph: ƒ.Node = viewport.getBranch();
     car = graph.getChildrenByName("Car")[0];
     obstacles = graph.getChildrenByName("Obstacles")[0];
     road = graph.getChildrenByName("Road")[0];
-
     exhaust = car.getChildrenByName("Exhaust")[0];
     graph.addEventListener("toggleExhaust", hndExhaust);
     document.addEventListener(EVENT_GAME_OVER, handleGameOver);
@@ -142,67 +145,48 @@ namespace Script {
 
 
   function update(_event: Event): void {
+
+    let timeElapsedInSeconds: number = ƒ.Loop.timeFrameStartGame / 1000;;
+    let timeSinceLastFrame: number = ƒ.Loop.timeFrameGame / 1000; // seconds passed since last loop frame
+    let distanceInLastFrame: number = (gameState.carSpeed * timeSinceLastFrame) / 3600; // Distance in kilometers s = v * t
+    const maxGameSpeed = 0.1; // Maximum game speed (corresponding to 360 km/h)
+
+
     if (gameOver)
       return;
 
-    // Move the obstacles and remove them after going out of camera view
+    // Move the obstacles, check for collisions and remove them after going out of camera view
     for (const obstacle of obstacles.getChildren()) {
       let obstacleSpeedModifier: number = obstacle["obstacleSpeedModifier"];
       obstacle.mtxLocal.translateY(obstacleSpeed.y * obstacleSpeedModifier);
+      checkCollision(car, obstacle);
       // Check if the obstacle has moved below a certain y-coordinate
       if (obstacle.mtxLocal.translation.y < -2) {
         obstacles.removeChild(obstacle); // Remove the obstacle from the obstacles node
       }
     }
 
-    // check for collisions
-    for (const obstacle of obstacles.getChildren()) {
-      checkCollision(car, obstacle);
-    }
-
-
-
-    let timeElapsedInSeconds: number = 0;
-    let timeSinceLastFrame: number = 0;
-    let distanceInLastFrame: number = 0;
-    const maxGameSpeed = 0.1; // Maximum game speed (corresponding to 360 km/h)
-    
-    timeElapsedInSeconds = ƒ.Loop.timeFrameStartGame / 1000;
-    timeSinceLastFrame = ƒ.Loop.timeFrameGame / 1000; // seconds passed since last loop frame
-    distanceInLastFrame = (gameState.carSpeed * timeSinceLastFrame) / 3600; // Distance in kilometers s = v * t
-    
     // Accumulate the distance traveled
     gameState.distanceTraveled += distanceInLastFrame;
-    
-
 
     const logarithmicGameSpeed = Math.log(gameSpeedModifier * timeElapsedInSeconds + 1) * gameSpeedModifier;
 
     // Set the gameSpeed while limiting it to the maximum value
     gameSpeed = Math.min(logarithmicGameSpeed, maxGameSpeed);
 
-
-    // set gamespeed increase per second
-    // gameSpeed += gameSpeedModifier * timeElapsedInSeconds;
-    
-    // limit the gameSpeed at 0.1 (360km/h carSpeed)
-   /* if (gameSpeed > 0.1) {
-      gameSpeed = 0.1;
-    } */
-    
     // Update the speed of the obstacles 
     obstacleSpeed.y -= (gameSpeed / 1000);
     
     gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
     gameState.carSpeedRange = gameState.carSpeed;
     
-  
 
     // create more obstacles after 1.5km traveled
     if (gameState.distanceTraveled > 1.5 && !obstacleCreated) {
       createObstacle();
       obstacleCreated = true;
     }
+
     roadAnimationFramerate += gameSpeed;
     roadsprite.framerate = roadAnimationFramerate;
 
@@ -211,7 +195,9 @@ namespace Script {
     viewport.draw();
     ƒ.AudioManager.default.update();
   }
-  // car movement 
+
+
+  // car movement by setting car translation values whenever one of the specified keys is pressed
   function carMove(): void {
     if (car.mtxLocal.translation.x < 1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D])) {
       carControl.set(0.06, 0, 0);
@@ -229,15 +215,13 @@ namespace Script {
       carControl.set(0, 0, 0);
     }
 
-
     car.mtxLocal.translate(carControl);
   }
+
   function handleCollision(event: CustomEvent): void {
     const collidedObstacle = event.detail.collidedObstacle;
-
-
-
     const gameOverEvent: Event = new Event(EVENT_GAME_OVER);
+
     document.dispatchEvent(gameOverEvent);
   }
 
@@ -246,7 +230,6 @@ namespace Script {
       exhaust.activate(true);
     }
   }
-
 
   function carGas(_event: KeyboardEvent): void {
     if (_event.code == ƒ.KEYBOARD_CODE.ARROW_UP || _event.code == ƒ.KEYBOARD_CODE.W) {
@@ -301,28 +284,32 @@ namespace Script {
     }
 
   }
+
   // Game Stop 
   function handleGameOver(): void {
-    ƒ.Loop.stop();
-    clearTimeout(obstacleCreationTimeout);
-    engineSound.play(false);
-    policeSound.play(false);
-    gameOver = true;
     let gameOverScreen: HTMLDivElement = document.querySelector("#gameOverScreen");
     let vui: HTMLDivElement = document.querySelector("#vui");
     let runtimeStats: HTMLDivElement = document.querySelector("#runtimeStats");
     let tutorial: HTMLDivElement = document.querySelector("#tutorial");
+
+    engineSound.play(false);
+    policeSound.play(false);
+    gameOver = true;
     tutorial.style.display = "none";
     runtimeStats.style.display = "none";
     vui.style.cursor = "auto";
     gameOverScreen.style.display = "block";
+
+    ƒ.Loop.stop();
+    clearTimeout(obstacleCreationTimeout);
     console.log("Game Over");
   }
 
-  // liefert zufällig einen von 4 x Werten der verschiedenen Spuren
+  // calculate random x value of the 4 different lanes
   function getRandomXValue(): number {
     const xValues: number[] = [1.5, 0.5, -0.5, -1.5];
     const randomIndex: number = Math.floor(Math.random() * xValues.length);
+
     return xValues[randomIndex];
   }
 
@@ -335,6 +322,7 @@ namespace Script {
     if (gameOver) {
       return;
     }
+
     const obstacleTextures: ƒ.TextureImage[] = [
       new ƒ.TextureImage("Textures/police.png"),
       new ƒ.TextureImage("Textures/Pothole.png"),
@@ -342,15 +330,15 @@ namespace Script {
       new ƒ.TextureImage("Textures/Car_Yellow.png"),
       new ƒ.TextureImage("Textures/Car_White.png")
     ];
-  
     const textureIndex: number = Math.floor(Math.random() * obstacleTextures.length);
     const texture: ƒ.TextureImage = obstacleTextures[textureIndex];
-  
-
     let scaling: ƒ.Vector3;
     let isPulsing: boolean;
     let obstacleSpeedModifier: number;
     let policeSprite: ƒAid.NodeSprite;
+    let obstaclePosition: ƒ.Vector3;
+    let obstaclesInRange: Obstacle[];
+    
     policeSprite = createPoliceSprite(texture);
 
     if (textureIndex === 0) {
@@ -362,7 +350,7 @@ namespace Script {
     } else if (textureIndex === 1) {
       // Pothole
       obstacleSpeedModifier = 0.6;
-      scaling = new ƒ.Vector3(0.4, 0.4, 1);
+      scaling = new ƒ.Vector3(0.4, 0.4, 0.9);
       isPulsing = false;
     } else if (textureIndex === 2) {
       // Truck
@@ -385,13 +373,12 @@ namespace Script {
 
     const obstacle = new Obstacle(texture, scaling, obstacleSpeedModifier, isPulsing);
     obstacle.passed = false;
+
     if (textureIndex === 0) {
       obstacle.addChild(policeSprite);
-      obstacle.getComponent(ƒ.ComponentMaterial).activate(false);
+      obstacle.getComponent(ƒ.ComponentMaterial).activate(false); 
     }
 
-    let obstaclePosition: ƒ.Vector3;
-    let obstaclesInRange: Obstacle[];
 
     do {
       const newXValue = getRandomXValue();
@@ -420,13 +407,16 @@ namespace Script {
 
 
   function scheduleNextObstacleCreation(): void {
-    const minInterval: number = 6 - (gameSpeed * 80); // Minimum interval in seconds
-    const maxInterval: number = 10 - (gameSpeed) * 80; // Maximum interval in seconds
+    const minInterval: number = creationInterval.x - (gameSpeed * 80); // Minimum interval in seconds
+    const maxInterval: number = creationInterval.y - (gameSpeed) * 80; // Maximum interval in seconds
     const interval: number = getRandomNumber(minInterval, maxInterval); // Random interval in seconds
     // Wait for the interval and then create a random obstacle
     obstacleCreationTimeout = setTimeout(createObstacle, interval * 1000);
+    console.log(interval);
   }
   
+
+  // generate Road Sprite Animation 
   async function createRoadSprite(): Promise<ƒAid.NodeSprite> {
     let imgSpriteSheet: ƒ.TextureImage = new ƒ.TextureImage();
     await imgSpriteSheet.load("Textures/Road_bearbeitet_neu.png");
@@ -448,7 +438,7 @@ namespace Script {
 
 
 
-
+// generale Exhaust Sprite Animation
   async function createExhaustSprite(): Promise<ƒAid.NodeSprite> {
     let imgSpriteSheet: ƒ.TextureImage = new ƒ.TextureImage();
     await imgSpriteSheet.load("Textures/exhaust.png");
@@ -466,7 +456,7 @@ namespace Script {
     return sprite;
   }
 
-
+// generale Police Sprite Animation
   function createPoliceSprite(texture: ƒ.TextureImage): ƒAid.NodeSprite {
     let coat: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, texture);
     let animation: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation("Police", coat);

@@ -43,6 +43,7 @@ var Script;
     let gameOver = false;
     let obstacleCreated = false;
     let obstacleCreationTimeout;
+    let creationInterval;
     let engineSound;
     let crashSound;
     let carPassingSound;
@@ -88,6 +89,7 @@ var Script;
         tutorial.style.display = "block";
         gameSpeedModifier = config.gameSpeedModifier;
         obstacleSpeed = config.obstacleSpeed;
+        creationInterval = config.creationInterval;
         viewport = _event.detail;
         viewport.camera.attachToNode(road);
         viewport.camera.mtxPivot.translate(new ƒ.Vector3(0, 3.185, -10.9));
@@ -126,39 +128,28 @@ var Script;
         ƒ.Loop.start(realTime, 60); // start the game loop to continuously draw the viewport, update the audiosystem and drive the physics i/a
     }
     function update(_event) {
+        let timeElapsedInSeconds = ƒ.Loop.timeFrameStartGame / 1000;
+        ;
+        let timeSinceLastFrame = ƒ.Loop.timeFrameGame / 1000; // seconds passed since last loop frame
+        let distanceInLastFrame = (gameState.carSpeed * timeSinceLastFrame) / 3600; // Distance in kilometers s = v * t
+        const maxGameSpeed = 0.1; // Maximum game speed (corresponding to 360 km/h)
         if (gameOver)
             return;
-        // Move the obstacles and remove them after going out of camera view
+        // Move the obstacles, check for collisions and remove them after going out of camera view
         for (const obstacle of obstacles.getChildren()) {
             let obstacleSpeedModifier = obstacle["obstacleSpeedModifier"];
             obstacle.mtxLocal.translateY(obstacleSpeed.y * obstacleSpeedModifier);
+            checkCollision(car, obstacle);
             // Check if the obstacle has moved below a certain y-coordinate
             if (obstacle.mtxLocal.translation.y < -2) {
                 obstacles.removeChild(obstacle); // Remove the obstacle from the obstacles node
             }
         }
-        // check for collisions
-        for (const obstacle of obstacles.getChildren()) {
-            checkCollision(car, obstacle);
-        }
-        let timeElapsedInSeconds = 0;
-        let timeSinceLastFrame = 0;
-        let distanceInLastFrame = 0;
-        const maxGameSpeed = 0.1; // Maximum game speed (corresponding to 360 km/h)
-        timeElapsedInSeconds = ƒ.Loop.timeFrameStartGame / 1000;
-        timeSinceLastFrame = ƒ.Loop.timeFrameGame / 1000; // seconds passed since last loop frame
-        distanceInLastFrame = (gameState.carSpeed * timeSinceLastFrame) / 3600; // Distance in kilometers s = v * t
         // Accumulate the distance traveled
         gameState.distanceTraveled += distanceInLastFrame;
         const logarithmicGameSpeed = Math.log(gameSpeedModifier * timeElapsedInSeconds + 1) * gameSpeedModifier;
         // Set the gameSpeed while limiting it to the maximum value
         gameSpeed = Math.min(logarithmicGameSpeed, maxGameSpeed);
-        // set gamespeed increase per second
-        // gameSpeed += gameSpeedModifier * timeElapsedInSeconds;
-        // limit the gameSpeed at 0.1 (360km/h carSpeed)
-        /* if (gameSpeed > 0.1) {
-           gameSpeed = 0.1;
-         } */
         // Update the speed of the obstacles 
         obstacleSpeed.y -= (gameSpeed / 1000);
         gameState.carSpeed = Math.round(gameSpeed * 3600); // Convert gameSpeed to km/h
@@ -174,7 +165,7 @@ var Script;
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
-    // car movement 
+    // car movement by setting car translation values whenever one of the specified keys is pressed
     function carMove() {
         if (car.mtxLocal.translation.x < 1.5 && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D])) {
             carControl.set(0.06, 0, 0);
@@ -250,22 +241,22 @@ var Script;
     }
     // Game Stop 
     function handleGameOver() {
-        ƒ.Loop.stop();
-        clearTimeout(obstacleCreationTimeout);
-        engineSound.play(false);
-        policeSound.play(false);
-        gameOver = true;
         let gameOverScreen = document.querySelector("#gameOverScreen");
         let vui = document.querySelector("#vui");
         let runtimeStats = document.querySelector("#runtimeStats");
         let tutorial = document.querySelector("#tutorial");
+        engineSound.play(false);
+        policeSound.play(false);
+        gameOver = true;
         tutorial.style.display = "none";
         runtimeStats.style.display = "none";
         vui.style.cursor = "auto";
         gameOverScreen.style.display = "block";
+        ƒ.Loop.stop();
+        clearTimeout(obstacleCreationTimeout);
         console.log("Game Over");
     }
-    // liefert zufällig einen von 4 x Werten der verschiedenen Spuren
+    // calculate random x value of the 4 different lanes
     function getRandomXValue() {
         const xValues = [1.5, 0.5, -0.5, -1.5];
         const randomIndex = Math.floor(Math.random() * xValues.length);
@@ -291,6 +282,8 @@ var Script;
         let isPulsing;
         let obstacleSpeedModifier;
         let policeSprite;
+        let obstaclePosition;
+        let obstaclesInRange;
         policeSprite = createPoliceSprite(texture);
         if (textureIndex === 0) {
             // Police
@@ -302,7 +295,7 @@ var Script;
         else if (textureIndex === 1) {
             // Pothole
             obstacleSpeedModifier = 0.6;
-            scaling = new ƒ.Vector3(0.4, 0.4, 1);
+            scaling = new ƒ.Vector3(0.4, 0.4, 0.9);
             isPulsing = false;
         }
         else if (textureIndex === 2) {
@@ -331,8 +324,6 @@ var Script;
             obstacle.addChild(policeSprite);
             obstacle.getComponent(ƒ.ComponentMaterial).activate(false);
         }
-        let obstaclePosition;
-        let obstaclesInRange;
         do {
             const newXValue = getRandomXValue();
             obstaclePosition = new ƒ.Vector3(newXValue, getRandomNumber(7, 7), 0);
@@ -352,12 +343,14 @@ var Script;
         scheduleNextObstacleCreation();
     }
     function scheduleNextObstacleCreation() {
-        const minInterval = 6 - (gameSpeed * 80); // Minimum interval in seconds
-        const maxInterval = 10 - (gameSpeed) * 80; // Maximum interval in seconds
+        const minInterval = creationInterval.x - (gameSpeed * 80); // Minimum interval in seconds
+        const maxInterval = creationInterval.y - (gameSpeed) * 80; // Maximum interval in seconds
         const interval = getRandomNumber(minInterval, maxInterval); // Random interval in seconds
         // Wait for the interval and then create a random obstacle
         obstacleCreationTimeout = setTimeout(createObstacle, interval * 1000);
+        console.log(interval);
     }
+    // generate Road Sprite Animation 
     async function createRoadSprite() {
         let imgSpriteSheet = new ƒ.TextureImage();
         await imgSpriteSheet.load("Textures/Road_bearbeitet_neu.png");
@@ -373,6 +366,7 @@ var Script;
         sprite.mtxLocal.translateY(-2);
         return sprite;
     }
+    // generale Exhaust Sprite Animation
     async function createExhaustSprite() {
         let imgSpriteSheet = new ƒ.TextureImage();
         await imgSpriteSheet.load("Textures/exhaust.png");
@@ -387,6 +381,7 @@ var Script;
         sprite.addComponent(cmpTransfrom);
         return sprite;
     }
+    // generale Police Sprite Animation
     function createPoliceSprite(texture) {
         let coat = new ƒ.CoatTextured(undefined, texture);
         let animation = new ƒAid.SpriteSheetAnimation("Police", coat);
